@@ -2,7 +2,7 @@ import { useRef, useState } from 'react';
 import { navigate } from '../App';
 import { Icon, Logo } from '../components/Icon';
 import { ConfirmSheet, PlayerDot, Sheet, useToast } from '../components/ui';
-import { dateLabel, plain, plural } from '../logic/format';
+import { dateLabel, plain, plural, signed } from '../logic/format';
 import { computeSession, ranking } from '../logic/session';
 import { makeExampleSession } from '../state/example';
 import { actions, getState, sanitize, useAppData } from '../state/store';
@@ -164,44 +164,47 @@ export function Home() {
 /** A static sketch of a filled-in block sheet (decoration only). */
 function BlockIllustration() {
   const names = ['Anna', 'Ben', 'Carla', 'David'];
-  const rows: { totals: number[]; win: boolean[]; value: number; bock?: boolean; solo?: number }[] = [
-    { totals: [1, 1, -1, -1], win: [true, true, false, false], value: 1 },
-    { totals: [-1, 3, -3, 1], win: [false, true, false, true], value: 2 },
-    { totals: [7, -5, 5, -7], win: [true, false, true, false], value: 4, bock: true },
-    { totals: [5, -7, 11, -9], win: [false, false, true, false], value: 2, solo: 2 },
+  const totals = [5, -7, 11, -9];
+  const rows: { points: number[]; value: number; bock?: boolean; solo?: boolean }[] = [
+    { points: [1, 1, -1, -1], value: 1 },
+    { points: [-2, 2, -2, 2], value: 2 },
+    { points: [8, -8, 8, -8], value: 4, bock: true },
+    { points: [-2, -2, 6, -2], value: 2, solo: true },
   ];
   return (
     <div className="illu" aria-hidden="true">
       <div className="illu__sheet" style={{ ['--n' as string]: 4 }}>
-        <div className="grid-row illu__head">
-          <span className="bh-no">Nr.</span>
+        <div className="grid-row block-head illu__head">
+          <span className="bh-no" />
           {names.map((n, i) => (
-            <span key={n} className="bh-player" style={{ ['--pc' as string]: `var(--p${i + 1})` }}>
+            <span key={n} className={`bh-player${i === 2 ? ' is-lead' : ''}`} style={{ ['--pc' as string]: `var(--p${i + 1})` }}>
               <span className="bh-name">
                 <span className="bh-name__text">{n}</span>
               </span>
-              <span className={`bh-total num${rows[3].totals[i] < 0 ? ' is-neg' : ''}`}>{plain(rows[3].totals[i])}</span>
+              <span className={`bh-total num${totals[i] < 0 ? ' is-neg' : ''}`}>{plain(totals[i])}</span>
             </span>
           ))}
-          <span className="bh-val">Wert</span>
+          <span className="bh-val" />
         </div>
-        {rows.map((r, k) => (
-          <div key={k} className={`grid-row brow${r.bock ? ' is-bock' : ''}`}>
-            <span className="bc-no">
-              <span className="num">{k + 1}</span>
-              {r.solo != null && <span className="mark-solo">D</span>}
-            </span>
-            {r.totals.map((t, i) => (
-              <span key={i} className={`bc${r.win[i] ? ' is-win' : ''}${t < 0 ? ' is-minus' : ''}${r.solo === i ? ' is-solo' : ''}`}>
-                <span className="num">{plain(t)}</span>
+        <div className="illu__paper">
+          {rows.map((r, k) => (
+            <div key={k} className={`grid-row brow${r.bock ? ' is-bock' : ''}`}>
+              <span className="bc-no">
+                <span className="num">{k + 1}</span>
+                {r.solo && <span className="mark-solo">D</span>}
               </span>
-            ))}
-            <span className="bc-val">
-              <span className="num">{r.value}</span>
-              {r.bock && <span className="bc-val__x num">×2</span>}
-            </span>
-          </div>
-        ))}
+              {r.points.map((v, i) => (
+                <span key={i} className={`bc${v > 0 ? ' is-win' : ''}${v < 0 ? ' is-minus' : ''}`}>
+                  <span className="num">{signed(v)}</span>
+                </span>
+              ))}
+              <span className="bc-val">
+                <span className="num">{r.value}</span>
+                {r.bock && <span className="bc-val__x num">×2</span>}
+              </span>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );

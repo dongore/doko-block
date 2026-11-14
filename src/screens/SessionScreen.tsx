@@ -1,6 +1,6 @@
 import { Fragment, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import { navigate } from '../App';
-import { Icon } from '../components/Icon';
+import { DealerIcon, Icon } from '../components/Icon';
 import { ConfirmSheet, Segmented, Sheet, Switch, useToast } from '../components/ui';
 import { shareText } from '../components/share';
 import { useWakeLock } from '../components/useWakeLock';
@@ -32,6 +32,14 @@ export function SessionScreen({ id, tab: requestedTab }: { id: string; tab: Sess
   const [sheet, setSheet] = useState<SheetName>(null);
   const view = useMemo(() => (session ? computeSession(session) : null), [session]);
   const scrollToEnd = useRef(false);
+  /** The game just entered, highlighted briefly so you see where it landed. */
+  const [freshId, setFreshId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!freshId) return;
+    const t = window.setTimeout(() => setFreshId(null), 2800);
+    return () => window.clearTimeout(t);
+  }, [freshId]);
 
   useWakeLock(data.keepAwake && tab === 'block' && !!session && !session.finishedAt);
 
@@ -80,6 +88,7 @@ export function SessionScreen({ id, tab: requestedTab }: { id: string; tab: Sess
   const saveGame = (game: Game, isNew: boolean) => {
     if (isNew) {
       scrollToEnd.current = true;
+      setFreshId(game.id);
       actions.addGame(session.id, game);
       navigator.vibrate?.(12);
       toast(`Spiel ${session.games.length + 1} eingetragen`, { label: 'Rückgängig', run: () => actions.deleteGame(session.id, game.id) });
@@ -103,7 +112,7 @@ export function SessionScreen({ id, tab: requestedTab }: { id: string; tab: Sess
   const setTab = (t: SessionTab) => navigate({ name: 'session', id: session.id, tab: t }, true);
 
   return (
-    <div className="screen session">
+    <div className={`screen session session--${tab}`}>
       <div className="session__top">
         <header className="appbar">
           <div className="appbar__inner">
@@ -113,30 +122,39 @@ export function SessionScreen({ id, tab: requestedTab }: { id: string; tab: Sess
             <div className="appbar__titles">
               <h1 className="appbar__title">{session.name}</h1>
               <span className="appbar__sub">
+                {tab === 'stats' ? 'Statistik · ' : tab === 'money' ? 'Abrechnung · ' : ''}
                 {finished
                   ? `Beendet · ${plural(session.games.length, 'Spiel', 'Spiele')}`
                   : `${plural(session.games.length, 'Spiel', 'Spiele')} · Runde ${view.next.round}${session.rules.rounds ? ` von ${session.rules.rounds}` : ''}`}
               </span>
             </div>
+            <nav className="viewtabs" aria-label="Ansicht">
+              {(
+                [
+                  ['block', 'Block', 'block'],
+                  ['stats', 'Statistik', 'chart'],
+                  ['money', 'Abrechnung', 'coins'],
+                ] as const
+              )
+                .filter(([t]) => t !== 'money' || moneyOn)
+                .map(([t, label, icon]) => (
+                  <button
+                    key={t}
+                    type="button"
+                    className="viewtab"
+                    aria-current={tab === t ? 'page' : undefined}
+                    aria-label={label}
+                    title={label}
+                    onClick={() => setTab(t)}
+                  >
+                    <Icon name={icon} size={20} />
+                  </button>
+                ))}
+            </nav>
             <button type="button" className="icon-btn icon-btn--on-chrome" onClick={() => setSheet('menu')} aria-label="Mehr">
               <Icon name="more" />
             </button>
           </div>
-          <nav className="tabs" aria-label="Ansicht">
-            {(
-              [
-                ['block', 'Block', 'block'],
-                ['stats', 'Statistik', 'chart'],
-                ['money', 'Abrechnung', 'coins'],
-              ] as const
-            )
-              .filter(([t]) => t !== 'money' || moneyOn)
-              .map(([t, label, icon]) => (
-                <button key={t} type="button" className="tab" aria-current={tab === t ? 'page' : undefined} onClick={() => setTab(t)}>
-                  <Icon name={icon} size={18} /> {label}
-                </button>
-              ))}
-          </nav>
         </header>
         {tab === 'block' && <BlockHead session={session} view={view} />}
       </div>
@@ -152,6 +170,7 @@ export function SessionScreen({ id, tab: requestedTab }: { id: string; tab: Sess
           session={session}
           view={view}
           cellMode={prefs.cellMode}
+          freshId={freshId}
           onOpen={(gv) => setDetailId(gv.game.id)}
           onNew={() => !finished && setEntry({ open: true })}
           finished={finished}
@@ -308,9 +327,7 @@ function BlockHead({ session, view }: { session: Session; view: SessionView }) {
   return (
     <div className={`block-head${cols.length >= 6 ? ' is-dense' : ''}`} style={{ '--n': cols.length } as CSSProperties}>
       <div className="grid-row">
-        <div className="bh-no" aria-hidden="true">
-          Nr.
-        </div>
+        <div className="bh-no" aria-hidden="true" />
         {cols.map((id) => {
           const p = session.players.find((x) => x.id === id)!;
           const seated = session.seating.includes(id);
@@ -329,7 +346,12 @@ function BlockHead({ session, view }: { session: Session; view: SessionView }) {
               </span>
               <span className={`bh-total num${total < 0 ? ' is-neg' : ''}`}>{plain(total)}</span>
               <span className="bh-flags">
-                {isDealer && <span className="flag flag--dealer">gibt</span>}
+                {isDealer && (
+                  <span className="dealer-mark" title="gibt">
+                    <DealerIcon size={16} />
+                    <span className="sr-only">gibt</span>
+                  </span>
+                )}
                 {out && !isDealer && <span className="flag">aus</span>}
                 {session.rules.pflichtsolo.enabled && seated && (
                   <span className={`pflicht-mark${view.pflichtDone[id] ? ' is-done' : ''}`} title={view.pflichtDone[id] ? 'Pflichtsolo gespielt' : 'Pflichtsolo offen'}>
@@ -340,9 +362,7 @@ function BlockHead({ session, view }: { session: Session; view: SessionView }) {
             </div>
           );
         })}
-        <div className="bh-val" aria-hidden="true">
-          Wert
-        </div>
+        <div className="bh-val" aria-hidden="true" />
       </div>
     </div>
   );
@@ -352,6 +372,7 @@ function BlockBody({
   session,
   view,
   cellMode,
+  freshId,
   onOpen,
   onNew,
   finished,
@@ -359,6 +380,7 @@ function BlockBody({
   session: Session;
   view: SessionView;
   cellMode: Prefs['cellMode'];
+  freshId: string | null;
   onOpen: (gv: GameView) => void;
   onNew: () => void;
   finished: boolean;
@@ -398,7 +420,7 @@ function BlockBody({
                 </li>
               )}
               <li>
-                <GameRow gv={gv} cols={cols} cellMode={cellMode} onOpen={() => onOpen(gv)} />
+                <GameRow gv={gv} cols={cols} cellMode={cellMode} fresh={gv.game.id === freshId} onOpen={() => onOpen(gv)} />
               </li>
             </Fragment>
           ))}
@@ -422,7 +444,19 @@ function BlockBody({
   );
 }
 
-function GameRow({ gv, cols, cellMode, onOpen }: { gv: GameView; cols: PlayerId[]; cellMode: Prefs['cellMode']; onOpen: () => void }) {
+function GameRow({
+  gv,
+  cols,
+  cellMode,
+  fresh,
+  onOpen,
+}: {
+  gv: GameView;
+  cols: PlayerId[];
+  cellMode: Prefs['cellMode'];
+  fresh: boolean;
+  onOpen: () => void;
+}) {
   const { game, result } = gv;
   const solo = game.kind === 'solo';
   const s = solo ? soloInfo(game.soloType) : undefined;
@@ -430,7 +464,7 @@ function GameRow({ gv, cols, cellMode, onOpen }: { gv: GameView; cols: PlayerId[
   return (
     <button
       type="button"
-      className={`grid-row brow${gv.multiplier > 1 ? ' is-bock' : ''}${gv.multiplier > 2 ? ' is-bock2' : ''}`}
+      className={`grid-row brow${gv.multiplier > 1 ? ' is-bock' : ''}${gv.multiplier > 2 ? ' is-bock2' : ''}${fresh ? ' is-fresh' : ''}`}
       onClick={onOpen}
       aria-label={`Spiel ${gv.number} ansehen`}
     >
@@ -515,16 +549,23 @@ function BottomBar({
           )
         )}
         <div className="bottombar__row">
-          <button type="button" className={`btn btn--bock-ghost${bock.multiplier > 1 ? ' is-active' : ''}`} onClick={onBock} aria-label="Bockrunden">
-            <Icon name="bolt" size={18} />
-            {bock.multiplier > 1 ? (
+          {bock.multiplier > 1 ? (
+            <button
+              type="button"
+              className="btn btn--bock-ghost is-active"
+              onClick={onBock}
+              aria-label={`Bock ×${bock.multiplier}, noch ${plural(bock.remainingGames, 'Spiel', 'Spiele')}`}
+            >
+              <Icon name="bolt" size={18} />
               <span className="num">
                 ×{bock.multiplier} <small>· {bock.remainingGames}</small>
               </span>
-            ) : (
-              'Bock'
-            )}
-          </button>
+            </button>
+          ) : (
+            <button type="button" className="btn btn--bock-ghost btn--icon" onClick={onBock} aria-label="Bockrunden" title="Bockrunde auslösen">
+              <Icon name="bolt" size={20} />
+            </button>
+          )}
           <button type="button" className="btn btn--primary btn--lg btn--grow" onClick={onEntry}>
             <Icon name="plus" /> Spiel eintragen
           </button>

@@ -196,12 +196,18 @@ export interface Prefs {
   augenParty: 're' | 'kontra';
   /** Rechner: enter the result (winner + keine 90 …) or the exact Augen. */
   augenInput: 'result' | 'exact';
+  /** One-time preference updates applied (see loadPrefs). */
+  rev?: number;
 }
-const defaultPrefs: Prefs = { cellMode: 'stand', entryMode: 'calc', augenParty: 're', augenInput: 'result' };
+const PREFS_REV = 1;
+const defaultPrefs: Prefs = { cellMode: 'punkte', entryMode: 'calc', augenParty: 're', augenInput: 'result', rev: PREFS_REV };
 
 export function loadPrefs(): Prefs {
   try {
-    return { ...defaultPrefs, ...JSON.parse(localStorage.getItem(PREF_KEY) ?? '{}') };
+    const saved: Partial<Prefs> = JSON.parse(localStorage.getItem(PREF_KEY) ?? '{}');
+    // Rev 1: the block shows game points by default now that the standings sit on top.
+    if ((saved.rev ?? 0) < 1) saved.cellMode = 'punkte';
+    return { ...defaultPrefs, ...saved, rev: PREFS_REV };
   } catch {
     return defaultPrefs;
   }

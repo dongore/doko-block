@@ -72,3 +72,13 @@ export function Logo({ size = 32 }: { size?: number }) {
     </svg>
   );
 }
+
+/** Two fanned cards: marks who deals next. */
+export function DealerIcon({ size = 16 }: { size?: number }) {
+  return (
+    <svg className="icon" width={size} height={Math.round(size * 0.85)} viewBox="0 0 20 17" aria-hidden="true">
+      <rect x="3" y="2.5" width="8.5" height="12" rx="1.6" transform="rotate(-14 7.2 8.5)" fill="currentColor" opacity="0.45" />
+      <rect x="8.5" y="2" width="8.5" height="12" rx="1.6" transform="rotate(10 12.7 8)" fill="currentColor" />
+    </svg>
+  );
+}
