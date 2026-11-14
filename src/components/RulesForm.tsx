@@ -93,10 +93,11 @@ export function RulesForm({ rules, onChange, playerCount }: { rules: Rules; onCh
             value={rules.sitOut}
             onChange={(sitOut) => set({ sitOut })}
             options={[
-              { value: 'opposite', label: 'Geber + Gegenüber' },
-              { value: 'left4', label: 'Vier links vom Geber' },
+              { value: 'opposite', label: playerCount === 6 ? 'Geber + Gegenüber' : 'Geber + 2 Gegenüber' },
+              { value: 'left4', label: playerCount === 6 ? 'Geber + rechter Nachbar' : 'Geber + 2 rechts von ihm' },
             ]}
           />
+          <p className="section__hint">Der Geber setzt immer aus. Es spielen die vier Spieler, die übrig bleiben.</p>
         </Section>
       )}
 

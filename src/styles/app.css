@@ -699,6 +699,10 @@ ol {
   font-weight: 600;
   font-size: var(--fs-sm);
 }
+.chip:disabled {
+  opacity: 0.55;
+  border-style: dashed;
+}
 .chip[aria-pressed='true'] {
   background: var(--accent);
   border-color: var(--accent);
@@ -1368,6 +1372,10 @@ ol {
 }
 .bh-player.is-away {
   opacity: 0.5;
+}
+.bh-player.is-sitting-out .bh-name,
+.bh-player.is-sitting-out .bh-total {
+  opacity: 0.45;
 }
 .bh-flags {
   min-height: 18px;

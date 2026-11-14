@@ -41,6 +41,19 @@ describe('table rotation', () => {
     expect(tableFor(['a', 'b', 'c', 'd', 'e', 'f'], 'a', 'opposite').out).toEqual(['a', 'd']);
     expect(tableFor(['a', 'b', 'c', 'd', 'e', 'f'], 'a', 'left4').out).toEqual(['a', 'f']);
   });
+  it('always lets the dealer sit out with 5 or more players, in both variants', () => {
+    for (const n of [5, 6, 7]) {
+      const seats = ['a', 'b', 'c', 'd', 'e', 'f', 'g'].slice(0, n);
+      for (const mode of ['opposite', 'left4'] as const) {
+        for (const dealer of seats) {
+          const t = tableFor(seats, dealer, mode);
+          expect(t.out).toContain(dealer);
+          expect(t.playing).toHaveLength(4);
+          expect(t.playing).not.toContain(dealer);
+        }
+      }
+    }
+  });
   it('sits out three with seven players and everyone sits out equally over a round', () => {
     const seats = ['a', 'b', 'c', 'd', 'e', 'f', 'g'];
     const count: Record<string, number> = {};

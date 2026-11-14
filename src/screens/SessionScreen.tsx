@@ -320,7 +320,8 @@ function BlockHead({ session, view }: { session: Session; view: SessionView }) {
           return (
             <div
               key={id}
-              className={`bh-player${!seated ? ' is-away' : ''}${total === max && view.games.length > 0 ? ' is-lead' : ''}`}
+              className={`bh-player${!seated ? ' is-away' : ''}${out ? ' is-sitting-out' : ''}${total === max && view.games.length > 0 ? ' is-lead' : ''}`}
+              title={out ? (isDealer ? `${p.name} gibt und setzt aus` : `${p.name} setzt aus`) : undefined}
               style={{ '--pc': `var(--p${(session.players.indexOf(p) % 7) + 1})` } as CSSProperties}
             >
               <span className="bh-name">

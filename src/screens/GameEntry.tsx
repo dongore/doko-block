@@ -250,7 +250,10 @@ function EntryInner({
 
   /* ----- interactions ----- */
 
+  // With 5+ players the dealer always sits out.
+  const dealerOut = seated.length > 4;
   const toggleTable = (id: PlayerId) => {
+    if (dealerOut && id === dealerId && !d.playerIds.includes(id)) return;
     if (d.playerIds.includes(id)) {
       set({ playerIds: d.playerIds.filter((x) => x !== id), reIds: d.reIds.filter((x) => x !== id) });
       setTableHint(false);
@@ -356,9 +359,16 @@ function EntryInner({
           <Section title="Am Tisch" aside={<span className="section__aside">{d.playerIds.length} von 4</span>}>
             <div className="chips">
               {seated.map((id) => (
-                <button key={id} type="button" className="chip" aria-pressed={d.playerIds.includes(id)} onClick={() => toggleTable(id)}>
+                <button
+                  key={id}
+                  type="button"
+                  className="chip"
+                  aria-pressed={d.playerIds.includes(id)}
+                  disabled={dealerOut && id === dealerId && !d.playerIds.includes(id)}
+                  onClick={() => toggleTable(id)}
+                >
                   {name(id)}
-                  {id === dealerId && <span className="chip__note">gibt</span>}
+                  {id === dealerId && <span className="chip__note">{dealerOut ? 'gibt · setzt aus' : 'gibt'}</span>}
                 </button>
               ))}
             </div>
