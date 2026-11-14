@@ -111,6 +111,12 @@ export function GameDetailSheet({
               </div>
             </>
           )}
+          {gv.dealerStays && (
+            <div>
+              <dt>Geber</dt>
+              <dd>{name(game.dealerId)} hat danach noch einmal gegeben</dd>
+            </div>
+          )}
           {game.bockTriggers.length > 0 && (
             <div>
               <dt className="bock-text">Bock ausgelöst</dt>

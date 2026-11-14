@@ -10,7 +10,7 @@ A digital **Doppelkopf-Spielblock** (score pad) as an installable web app (PWA).
   - **Schnelleingabe:** Re party, winner, Spielwert. Done.
 - **Bockrunden:** triggered automatically (120:120, lost Kontra, lost Re, lost Solo, Nullspiel; each switchable, by default only a lost Kontra counts, not a lost Re) and **at any time by hand**. Multiple Bock rounds can run *one after another* (×2) or *stack* (×4 …).
 - **4–7 players** with automatic rotation of dealer and sit-outs (with 6/7 players: dealer + the player(s) opposite, or "the four to the dealer's left"). Players can join, leave, or change seats mid-game, and the next dealer can be corrected by hand.
-- **Pflichtsolo tracking:** a P marker per player. After a Pflichtsolo the same dealer deals again (configurable), with a reminder in the last round.
+- **Pflichtsolo tracking:** a P marker per player, with a reminder in the last round. After a Pflichtsolo the same dealer deals again (DDV). House rule, switchable: after a Lustsolo the soloist leads and the same dealer deals again, unless the soloist sat left of the dealer and would have led anyway.
 - **Statistik:** score chart, win rate, Re/Kontra/Solo record, Ansagen, best and worst game.
 - **Abrechnung:** cents per point, settlement *between players* (fewest possible transfers) or *into a kitty* (gap to the leader), and share the result as text.
 - Edit, delete with undo, light/dark mode, keeps the screen on, backup/restore as a JSON file.

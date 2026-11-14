@@ -68,6 +68,45 @@ describe('session replay', () => {
     expect(v.totals.c).toBe(3);
   });
 
+  describe('Lustsolo: dealer deals again unless the soloist would have led anyway', () => {
+    const t = ['a', 'b', 'c', 'd'];
+    const lust = (dealer: string, table: string[], soloist: string, extra: Partial<Game> = {}) =>
+      quick(dealer, table, [soloist], 1, { kind: 'solo', pflicht: false, ...extra });
+    it('keeps the dealer when someone else than the left neighbour plays solo', () => {
+      const s = mkSession(t);
+      s.games.push(lust('a', t, 'c'));
+      expect(computeSession(s).next.dealerId).toBe('a');
+      expect(computeSession(s).games[0].dealerStays).toBe(true);
+    });
+    it('moves on when the left neighbour of the dealer plays solo', () => {
+      const s = mkSession(t);
+      s.games.push(lust('a', t, 'b'));
+      expect(computeSession(s).next.dealerId).toBe('b');
+    });
+    it('skips sitting-out players when finding who leads', () => {
+      const five = ['a', 'b', 'c', 'd', 'e'];
+      const s = mkSession(five);
+      s.games.push(lust('a', ['b', 'c', 'd', 'e'], 'b'));
+      expect(computeSession(s).next.dealerId).toBe('b');
+      const s2 = mkSession(five);
+      s2.games.push(lust('a', ['b', 'c', 'd', 'e'], 'd'));
+      expect(computeSession(s2).next.dealerId).toBe('a');
+    });
+    it('can be switched off and ignores a Stille Hochzeit', () => {
+      const off = mkSession(t, { lustsolo: { dealerStays: false } });
+      off.games.push(lust('a', t, 'c'));
+      expect(computeSession(off).next.dealerId).toBe('b');
+      const still = mkSession(t);
+      still.games.push(lust('a', t, 'c', { soloType: 'stille-hochzeit' }));
+      expect(computeSession(still).next.dealerId).toBe('b');
+    });
+    it('always repeats after a Pflichtsolo, even by the left neighbour (DDV 4.2.5)', () => {
+      const s = mkSession(t);
+      s.games.push(quick('a', t, ['b'], 1, { kind: 'solo', pflicht: true }));
+      expect(computeSession(s).next.dealerId).toBe('a');
+    });
+  });
+
   it('plays a Bockrunde after a trigger (sequential)', () => {
     const s = mkSession(['a', 'b', 'c', 'd']);
     const t = ['a', 'b', 'c', 'd'];

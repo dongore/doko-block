@@ -59,6 +59,15 @@ export function RulesForm({ rules, onChange, playerCount }: { rules: Rules; onCh
         )}
       </Section>
 
+      <Section title={rules.pflichtsolo.enabled ? 'Lustsolo' : 'Solo'} className="rules__group">
+        <Switch
+          label={rules.pflichtsolo.enabled ? 'Geber gibt nach Lustsolo erneut' : 'Geber gibt nach Solo erneut'}
+          hint="Der Solist kommt raus. Saß er ohnehin links vom Geber, wechselt der Geber normal."
+          checked={rules.lustsolo.dealerStays}
+          onChange={(v) => set({ lustsolo: { dealerStays: v } })}
+        />
+      </Section>
+
       {playerCount >= 6 && (
         <Section title={`Aussetzen bei ${playerCount} Spielern`} className="rules__group">
           <Segmented

@@ -85,8 +85,37 @@ export function tableFor(seating: PlayerId[], dealerId: PlayerId, mode: Rules['s
   return { playing, out: seating.filter((id) => !playing.includes(id)) };
 }
 
-export function dealerStaysAfter(game: Game, rules: Rules): boolean {
-  return game.kind === 'solo' && !!game.pflicht && rules.pflichtsolo.enabled && rules.pflichtsolo.dealerStays;
+/** The player who leads the first trick in a normal deal: the first one at the table left of the dealer. */
+export function leaderOf(game: Pick<Game, 'dealerId' | 'playerIds'>, session: Pick<Session, 'players' | 'seating'>): PlayerId {
+  const order = session.seating.includes(game.dealerId) ? session.seating : session.players.map((p) => p.id);
+  const d = order.indexOf(game.dealerId);
+  for (let k = 1; k <= order.length; k++) {
+    const id = order[(d + k) % order.length];
+    if (game.playerIds.includes(id)) return id;
+  }
+  return game.playerIds[0];
+}
+
+export type DealerStayReason = 'pflicht' | 'lust' | null;
+
+/**
+ * Does the same player deal the next game?
+ * Pflichtsolo (DDV 4.2.5): yes, if enabled. Lustsolo (house rule): yes, unless the soloist would have led anyway.
+ */
+export function dealerStayReason(
+  game: Pick<Game, 'kind' | 'pflicht' | 'soloType' | 'reIds' | 'dealerId' | 'playerIds'>,
+  rules: Rules,
+  session: Pick<Session, 'players' | 'seating'>,
+): DealerStayReason {
+  if (game.kind !== 'solo') return null;
+  if (game.pflicht && rules.pflichtsolo.enabled) return rules.pflichtsolo.dealerStays ? 'pflicht' : null;
+  // A Stille Hochzeit is never announced, so the soloist does not take the lead.
+  if (!rules.lustsolo.dealerStays || game.soloType === 'stille-hochzeit') return null;
+  return game.reIds[0] && game.reIds[0] !== leaderOf(game, session) ? 'lust' : null;
+}
+
+export function dealerStaysAfter(game: Game, rules: Rules, session: Pick<Session, 'players' | 'seating'>): boolean {
+  return dealerStayReason(game, rules, session) != null;
 }
 
 /* ---------- Bock ---------- */
@@ -153,7 +182,7 @@ export function computeSession(session: Session): SessionView {
     const round = Math.floor(deals / roundSize) + 1;
     const roundStart = round !== prevRound;
     prevRound = round;
-    const stays = dealerStaysAfter(game, rules);
+    const stays = dealerStaysAfter(game, rules, session);
     if (!stays) deals++;
     if (game.kind === 'solo' && game.pflicht && game.reIds[0]) pflichtDone[game.reIds[0]] = true;
     if (rules.bock.enabled) bock.add(game.bockTriggers.length);
@@ -178,7 +207,7 @@ export function computeSession(session: Session): SessionView {
   let dealerId: PlayerId;
   if (session.nextDealerId && session.seating.includes(session.nextDealerId)) dealerId = session.nextDealerId;
   else if (!last) dealerId = session.seating.includes(session.firstDealerId) ? session.firstDealerId : session.seating[0];
-  else if (dealerStaysAfter(last, rules) && session.seating.includes(last.dealerId)) dealerId = last.dealerId;
+  else if (dealerStaysAfter(last, rules, session) && session.seating.includes(last.dealerId)) dealerId = last.dealerId;
   else dealerId = nextSeated(session, last.dealerId);
 
   const table = tableFor(session.seating, dealerId, rules.sitOut);

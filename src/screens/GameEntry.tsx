@@ -4,7 +4,7 @@ import { Section, Segmented, Sheet, Stepper } from '../components/ui';
 import { signed, uid } from '../logic/format';
 import { KIND_LABEL, SOLO_TYPES } from '../logic/labels';
 import { AUTO_TRIGGERS, baseDeltas, detectBockTriggers, emptyExtras, partyName, scoreGame, TRIGGER_LABEL } from '../logic/scoring';
-import type { SessionView } from '../logic/session';
+import { dealerStayReason, leaderOf, type SessionView } from '../logic/session';
 import { loadPrefs, savePrefs } from '../state/store';
 import type { Ann, BockTrigger, Extras, Game, GameKind, Party, PlayerId, Session, SoloType } from '../state/types';
 
@@ -141,6 +141,16 @@ function EntryInner({
     return session.games.some((g) => g.id !== editing?.id && g.kind === 'solo' && g.pflicht && g.reIds[0] === soloist);
   }, [soloist, session.games, editing?.id]);
   const pflicht = rules.pflichtsolo.enabled && solo ? (d.pflicht ?? !pflichtAlready) : false;
+  const dealHint = (() => {
+    if (!soloist) return null;
+    const g = { kind: d.kind, pflicht, soloType: d.soloType ?? undefined, reIds: d.reIds, dealerId, playerIds: d.playerIds };
+    const reason = dealerStayReason(g, rules, session);
+    if (reason === 'pflicht') return `Pflichtsolo: ${name(soloist)} kommt raus, ${name(dealerId)} gibt danach noch einmal.`;
+    if (reason === 'lust') return `${name(soloist)} kommt raus, ${name(dealerId)} gibt danach noch einmal.`;
+    if (rules.lustsolo.dealerStays && !pflicht && d.soloType !== 'stille-hochzeit' && leaderOf(g, session) === soloist)
+      return `${name(soloist)} kommt ohnehin raus, der Geber wechselt normal.`;
+    return null;
+  })();
 
   const augenNum = d.augen.trim() === '' ? null : Number(d.augen);
   const augenValid = augenNum != null && Number.isInteger(augenNum) && augenNum >= 0 && augenNum <= 240;
@@ -369,6 +379,7 @@ function EntryInner({
               );
             })}
           </div>
+          {solo && dealHint && <p className="section__hint">{dealHint}</p>}
         </Section>
 
         {d.mode === 'calc' ? (

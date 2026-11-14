@@ -93,6 +93,10 @@ export interface Rules {
     /** After a Pflichtsolo the same player deals again. */
     dealerStays: boolean;
   };
+  lustsolo: {
+    /** House rule: the soloist leads, so the same player deals again – unless the soloist would have led anyway. */
+    dealerStays: boolean;
+  };
   /** Who sits out with 6/7 players: opposite = dealer + player(s) opposite, left4 = the four left of dealer play. */
   sitOut: 'opposite' | 'left4';
   /** Planned number of rounds, null = open end. */
