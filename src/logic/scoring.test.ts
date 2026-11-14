@@ -72,18 +72,27 @@ describe('game value', () => {
   });
   it('nets Sonderpunkte regardless of winner', () => {
     const c = calc(125, 0, 0, {
-      reExtras: { fuchs: 0, doppelkopf: 0, karlchen: 0 },
-      kontraExtras: { fuchs: 1, doppelkopf: 1, karlchen: 0 },
+      reExtras: { fuchs: 0, doppelkopf: 0, karlchen: 0, dulle: 0 },
+      kontraExtras: { fuchs: 1, doppelkopf: 1, karlchen: 0, dulle: 0 },
     });
     expect(score(c)).toBe(-1); // Re +1, Kontra +2
   });
+  it('counts a Dulle caught in the last trick as a Sonderpunkt', () => {
+    const c = calc(125, 0, 0, { kontraExtras: { ...emptyExtras(), dulle: 1 } });
+    const r = scoreCalc(c, false, R);
+    expect(r.lines.map((l) => l.label)).toContain('Dulle im letzten Stich');
+    expect(r.reValue).toBe(0); // Re +1 gewonnen, Kontra +1 Dulle
+    const off = { ...R, extras: { ...R.extras, dulle: false } };
+    expect(scoreCalc(c, false, off).reValue).toBe(1);
+    expect(scoreCalc(c, true, R).reValue).toBe(1); // no Sonderpunkte in a solo
+  });
   it('ignores Sonderpunkte and gegen die Alten in a solo', () => {
-    const c = calc(100, 0, 0, { kontraExtras: { fuchs: 2, doppelkopf: 1, karlchen: 1 } });
+    const c = calc(100, 0, 0, { kontraExtras: { fuchs: 2, doppelkopf: 1, karlchen: 1, dulle: 0 } });
     expect(score(c, true)).toBe(-1);
   });
   it('respects disabled extras', () => {
-    const rules = { ...R, extras: { fuchs: false, doppelkopf: true, karlchen: true, gegenDieAlten: false } };
-    const c = calc(110, 0, 0, { kontraExtras: { fuchs: 1, doppelkopf: 0, karlchen: 0 } });
+    const rules = { ...R, extras: { fuchs: false, doppelkopf: true, karlchen: true, dulle: true, gegenDieAlten: false } };
+    const c = calc(110, 0, 0, { kontraExtras: { fuchs: 1, doppelkopf: 0, karlchen: 0, dulle: 0 } });
     expect(scoreCalc(c, false, rules).reValue).toBe(-1);
   });
 });
@@ -127,7 +136,7 @@ describe('bock triggers', () => {
     const g = game({ calc: calc(120, 1) });
     expect(detectBockTriggers(g, scoreGame(g, R), R)).toEqual(['tie120']);
     const z = game({
-      calc: calc(121, 0, 0, { kontraExtras: { fuchs: 1, doppelkopf: 0, karlchen: 0 } }),
+      calc: calc(121, 0, 0, { kontraExtras: { fuchs: 1, doppelkopf: 0, karlchen: 0, dulle: 0 } }),
     });
     expect(detectBockTriggers(z, scoreGame(z, R), R)).toEqual(['zeroGame']);
   });

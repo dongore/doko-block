@@ -6,7 +6,7 @@ A digital **Doppelkopf-Spielblock** (score pad) as an installable web app (PWA).
 
 - **Spielblock** in the style of a paper pad: running totals or per-game points, Spielwert column, round separators, and marks for Solo and Bock.
 - **Game entry** in two modes:
-  - **Rechner:** pick the Re party, Augen (for whichever pile you counted), Ansagen/Absagen, and Sonderpunkte (Fuchs, Doppelkopf, Karlchen, Gegen die Alten). The game value is computed according to the DDV Turnierspielregeln, and every point is itemised.
+  - **Rechner:** pick the Re party, Augen (for whichever pile you counted), Ansagen/Absagen, and Sonderpunkte (Fuchs, Doppelkopf, Karlchen, Gegen die Alten, plus the house rule Dulle im letzten Stich gefangen). The game value is computed according to the DDV Turnierspielregeln, and every point is itemised.
   - **Schnelleingabe:** Re party, winner, Spielwert. Done.
 - **Bockrunden:** triggered automatically (120:120, lost Kontra, lost Re, lost Solo, Nullspiel; each switchable, by default only a lost Kontra counts, not a lost Re) and **at any time by hand**. Multiple Bock rounds can run *one after another* (×2) or *stack* (×4 …).
 - **4–7 players** with automatic rotation of dealer and sit-outs (with 6/7 players: dealer + the player(s) opposite, or "the four to the dealer's left"). Players can join, leave, or change seats mid-game, and the next dealer can be corrected by hand.
@@ -25,6 +25,7 @@ A digital **Doppelkopf-Spielblock** (score pad) as an installable web app (PWA).
 | Each Absage (keine 90 / 60 / 30 / schwarz) | 1 each |
 | 120 against keine 90, 90 against keine 60, 60 against keine 30, 30 against schwarz | 1 each |
 | Gegen die Alten, Fuchs, Doppelkopf, Karlchen (normal games only) | 1 each |
+| House rule, switchable: opponents' Dulle (Herz-10) caught in the last trick (normal games only) | 1 each |
 
 Re wins with 121 Augen, or with 120 if only Kontra was announced. A party that made an Absage must fulfil it. If both parties miss their Absage, nobody wins; only "unter 90/60/30", the points against Absagen and Sonderpunkte count (TSR 7.1.3). In a Solo the soloist wins or pays three times. Every game sums to zero.
 

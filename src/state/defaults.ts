@@ -4,7 +4,7 @@ import type { AppData, Rules } from './types';
 type LegacyTriggers = Partial<Rules['bock']['triggers']> & { lostAnnounced?: boolean };
 
 export const DEFAULT_RULES: Rules = {
-  extras: { fuchs: true, doppelkopf: true, karlchen: true, gegenDieAlten: true },
+  extras: { fuchs: true, doppelkopf: true, karlchen: true, dulle: true, gegenDieAlten: true },
   bock: {
     enabled: true,
     mode: 'sequential',

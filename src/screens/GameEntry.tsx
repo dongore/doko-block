@@ -132,7 +132,7 @@ function EntryInner({
   const dealerId = editing ? editing.dealerId : view.next.dealerId;
   const multiplier = editView ? editView.multiplier : view.next.bock.multiplier;
   const seated = editing ? Array.from(new Set([...session.seating, ...editing.playerIds])) : session.seating;
-  const anyExtras = rules.extras.fuchs || rules.extras.doppelkopf || rules.extras.karlchen;
+  const anyExtras = rules.extras.fuchs || rules.extras.doppelkopf || rules.extras.karlchen || rules.extras.dulle;
 
   // Pflichtsolo default: the soloist's first solo counts as Pflicht.
   const soloist = solo ? d.reIds[0] : undefined;
@@ -510,6 +510,16 @@ function EntryInner({
                           </button>
                         );
                       })}
+                    </>
+                  )}
+                  {rules.extras.dulle && (
+                    <>
+                      <span className="extras__label">
+                        Dulle gefangen
+                        <span className="extras__hint">im letzten Stich</span>
+                      </span>
+                      <Stepper size="sm" label="Dulle gefangen Re" value={d.reExtras.dulle ?? 0} max={2 - (d.kontraExtras.dulle ?? 0)} onChange={(v) => setExtra('re', 'dulle', v)} />
+                      <Stepper size="sm" label="Dulle gefangen Kontra" value={d.kontraExtras.dulle ?? 0} max={2 - (d.reExtras.dulle ?? 0)} onChange={(v) => setExtra('kontra', 'dulle', v)} />
                     </>
                   )}
                 </div>

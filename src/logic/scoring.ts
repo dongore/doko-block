@@ -36,7 +36,7 @@ export const ABSAGE_LABEL: Record<number, string> = {
 export const partyName = (p: Party) => (p === 're' ? 'Re' : 'Kontra');
 export const other = (p: Party): Party => (p === 're' ? 'kontra' : 're');
 
-export const emptyExtras = (): Extras => ({ fuchs: 0, doppelkopf: 0, karlchen: 0 });
+export const emptyExtras = (): Extras => ({ fuchs: 0, doppelkopf: 0, karlchen: 0, dulle: 0 });
 
 export const isSoloKind = (kind: Game['kind']) => kind === 'solo';
 
@@ -159,6 +159,9 @@ export function scoreCalc(c: CalcInput, solo: boolean, rules: Rules): GameResult
         lines.push({ label: ex[p].doppelkopf > 1 ? `${ex[p].doppelkopf} Doppelköpfe` : 'Doppelkopf', party: p, points: ex[p].doppelkopf, kind: 'extra' });
       if (rules.extras.karlchen && ex[p].karlchen > 0)
         lines.push({ label: 'Karlchen', party: p, points: ex[p].karlchen, kind: 'extra' });
+      const dulle = ex[p].dulle ?? 0;
+      if (rules.extras.dulle && dulle > 0)
+        lines.push({ label: dulle > 1 ? '2 Dullen im letzten Stich' : 'Dulle im letzten Stich', party: p, points: dulle, kind: 'extra' });
     }
   }
 

@@ -26,6 +26,8 @@ export interface Extras {
   fuchs: number;
   doppelkopf: number;
   karlchen: number;
+  /** House rule: opponents' Herz-10 (Dulle) caught in the last trick. */
+  dulle: number;
 }
 
 export interface CalcInput {
@@ -72,6 +74,7 @@ export interface Rules {
     fuchs: boolean;
     doppelkopf: boolean;
     karlchen: boolean;
+    dulle: boolean;
     gegenDieAlten: boolean;
   };
   bock: {

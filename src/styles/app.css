@@ -2024,6 +2024,14 @@ ol {
 .extras__label {
   font-weight: 600;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  line-height: 1.25;
+}
+.extras__hint {
+  font-size: var(--fs-xs);
+  font-weight: 500;
+  color: var(--ink-3);
 }
 
 .value-grid {

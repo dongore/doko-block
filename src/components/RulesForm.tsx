@@ -17,6 +17,7 @@ export function RulesForm({ rules, onChange, playerCount }: { rules: Rules; onCh
         <Switch label="Fuchs gefangen" hint="Karo-Ass der Gegenpartei im eigenen Stich" checked={ex.fuchs} onChange={(v) => set({ extras: { ...ex, fuchs: v } })} />
         <Switch label="Doppelkopf" hint="Stich mit mindestens 40 Augen" checked={ex.doppelkopf} onChange={(v) => set({ extras: { ...ex, doppelkopf: v } })} />
         <Switch label="Karlchen" hint="Kreuz-Bube gewinnt den letzten Stich" checked={ex.karlchen} onChange={(v) => set({ extras: { ...ex, karlchen: v } })} />
+        <Switch label="Dulle gefangen" hint="Herz-10 der Gegenpartei im letzten Stich gefangen" checked={ex.dulle} onChange={(v) => set({ extras: { ...ex, dulle: v } })} />
         <Switch label="Gegen die Alten" hint="+1, wenn Kontra ein Normalspiel gewinnt" checked={ex.gegenDieAlten} onChange={(v) => set({ extras: { ...ex, gegenDieAlten: v } })} />
       </Section>
 
@@ -150,7 +151,7 @@ export function RulesForm({ rules, onChange, playerCount }: { rules: Rules; onCh
 
 export function rulesSummary(r: Rules): string {
   const parts: string[] = [];
-  const ex = [r.extras.fuchs && 'Fuchs', r.extras.doppelkopf && 'Doppelkopf', r.extras.karlchen && 'Karlchen'].filter(Boolean);
+  const ex = [r.extras.fuchs && 'Fuchs', r.extras.doppelkopf && 'Doppelkopf', r.extras.karlchen && 'Karlchen', r.extras.dulle && 'Dulle'].filter(Boolean);
   parts.push(ex.length ? ex.join(', ') : 'ohne Sonderpunkte');
   parts.push(r.bock.enabled ? `Bock ${r.bock.mode === 'overlap' ? 'überlagernd' : 'nacheinander'}` : 'ohne Bock');
   if (r.pflichtsolo.enabled) parts.push('Pflichtsolo');

@@ -1,6 +1,6 @@
 import { useSyncExternalStore } from 'react';
 import { emptyData, normalizeRules } from './defaults';
-import { determineWinner } from '../logic/scoring';
+import { determineWinner, emptyExtras } from '../logic/scoring';
 import type { AppData, BockTrigger, Game, Rules, Session } from './types';
 
 /** Older saves stored one "lostAnnounced" trigger; split it into Kontra or Re by who actually lost. */
@@ -33,7 +33,15 @@ export function sanitize(input: unknown): AppData {
   const sessions: Session[] = d.sessions.map((s) => ({
     ...s,
     rules: normalizeRules(s.rules),
-    games: (s.games ?? []).map((g) => ({ ...g, bockTriggers: migrateTriggers(g) })),
+    games: (s.games ?? []).map((g) => ({
+      ...g,
+      bockTriggers: migrateTriggers(g),
+      calc: g.calc && {
+        ...g.calc,
+        reExtras: { ...emptyExtras(), ...g.calc.reExtras },
+        kontraExtras: { ...emptyExtras(), ...g.calc.kontraExtras },
+      },
+    })),
     manualBocks: s.manualBocks ?? [],
     seating: s.seating ?? s.players.map((p) => p.id),
   }));
