@@ -5,6 +5,7 @@ import type { Game, Rules, Session } from '../state/types';
 import { emptyExtras } from './scoring';
 import { computeSession, ranking, tableFor } from './session';
 import { minimalTransfers, settle } from './money';
+import { resultText } from './shareText';
 
 const mkSession = (ids: string[], rules: Partial<Rules> = {}): Session => ({
   id: 's',
@@ -219,6 +220,15 @@ describe('saved data', () => {
 });
 
 describe('ranking & money', () => {
+  it('leaves the payout out of the shared result when Abrechnung is off', () => {
+    const s = mkSession(['a', 'b', 'c', 'd']);
+    s.games.push(quick('a', ['a', 'b', 'c', 'd'], ['a', 'b'], 2));
+    expect(resultText(s, computeSession(s))).toContain('Abrechnung (5 ct pro Punkt)');
+    const off = { ...s, rules: { ...s.rules, money: { ...s.rules.money, enabled: false } } };
+    const text = resultText(off, computeSession(off));
+    expect(text).not.toContain('Abrechnung');
+    expect(text).toContain('1. A');
+  });
   it('shares ranks on ties', () => {
     const players = ['a', 'b', 'c'].map((id) => ({ id, name: id }));
     expect(ranking(players, { a: 3, b: 5, c: 3 }).map((r) => r.rank)).toEqual([1, 2, 2]);
@@ -236,7 +246,7 @@ describe('ranking & money', () => {
   });
   it('fills the Kasse with the distance to the leader', () => {
     const players = ['a', 'b', 'c'].map((id) => ({ id, name: id }));
-    const s = settle(players, { a: 10, b: 4, c: -14 }, { centsPerPoint: 5, mode: 'pot' });
+    const s = settle(players, { a: 10, b: 4, c: -14 }, { enabled: true, centsPerPoint: 5, mode: 'pot' });
     expect(s.pot).toBe(30 + 120);
   });
 });

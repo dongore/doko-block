@@ -1,35 +1,14 @@
 import { Icon } from '../components/Icon';
 import { PlayerDot, Segmented, useToast } from '../components/ui';
-import { plain, plural } from '../logic/format';
+import { plain } from '../logic/format';
 import { formatEuro, settle } from '../logic/money';
-import { ranking, type SessionView } from '../logic/session';
+import type { SessionView } from '../logic/session';
+import { resultText } from '../logic/shareText';
 import { actions } from '../state/store';
 import type { Session } from '../state/types';
 import { shareText } from '../components/share';
 
 const RATES = [1, 2, 5, 10, 20, 50];
-
-export function resultText(session: Session, view: SessionView): string {
-  const ranks = ranking(session.players, view.totals);
-  const s = settle(session.players, view.totals, session.rules.money);
-  const name = (id: string) => session.players.find((p) => p.id === id)?.name ?? '';
-  const width = Math.max(...session.players.map((p) => p.name.length));
-  const lines = [
-    `${session.name}`,
-    `${plural(view.games.length, 'Spiel', 'Spiele')}${view.roundsCompleted ? `, ${plural(view.roundsCompleted, 'Runde', 'Runden')}` : ''}`,
-    '',
-    ...ranks.map((r) => `${r.rank}. ${r.player.name.padEnd(width)}  ${plain(r.score)}`),
-    '',
-    `Abrechnung (${session.rules.money.centsPerPoint} ct pro Punkt):`,
-  ];
-  if (session.rules.money.mode === 'pot') {
-    for (const b of s.balances) if (b.cents < 0) lines.push(`${name(b.id)} zahlt ${formatEuro(-b.cents)} in die Kasse`);
-    lines.push(`Kasse: ${formatEuro(s.pot)}`);
-  } else if (s.transfers.length === 0) lines.push('Niemand muss etwas zahlen.');
-  else for (const t of s.transfers) lines.push(`${name(t.from)} → ${name(t.to)}: ${formatEuro(t.cents)}`);
-  lines.push('', 'Gezählt mit Doko-Block');
-  return lines.join('\n');
-}
 
 export function MoneyView({ session, view }: { session: Session; view: SessionView }) {
   const toast = useToast();

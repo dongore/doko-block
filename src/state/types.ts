@@ -109,6 +109,8 @@ export interface Rules {
   /** Planned number of rounds, null = open end. */
   rounds: number | null;
   money: {
+    /** Show the Abrechnung (payout in money) at all. */
+    enabled: boolean;
     centsPerPoint: number;
     mode: 'pairwise' | 'pot';
   };

@@ -117,50 +117,61 @@ export function RulesForm({ rules, onChange, playerCount }: { rules: Rules; onCh
         </div>
         {rules.rounds != null && (
           <p className="section__hint">
-            {rules.rounds} Runden = {rules.rounds * playerCount} Spiele bei {playerCount} Spielern, ohne Pflichtsoli.
+            {rules.rounds} Runden = {rules.rounds * playerCount} Spiele bei {playerCount} Spielern
+            {rules.pflichtsolo.enabled || rules.lustsolo.dealerStays ? ', dazu die Soli, nach denen derselbe Geber noch einmal gibt.' : '.'}
           </p>
         )}
       </Section>
 
       <Section title="Abrechnung" className="rules__group">
-        <div className="field">
-          <span className="field__label">Betrag pro Punkt</span>
-          <div className="chips">
-            {RATES.map((c) => (
-              <button
-                key={c}
-                type="button"
-                className="chip"
-                aria-pressed={rules.money.centsPerPoint === c}
-                onClick={() => set({ money: { ...rules.money, centsPerPoint: c } })}
-              >
-                {c} ct
-              </button>
-            ))}
-            {!RATES.includes(rules.money.centsPerPoint) && (
-              <span className="chip" aria-pressed="true">
-                {formatEuro(rules.money.centsPerPoint)}
-              </span>
-            )}
-          </div>
-        </div>
-        <div className="field">
-          <span className="field__label">Abrechnen</span>
-          <Segmented
-            label="Abrechnungsart"
-            value={rules.money.mode}
-            onChange={(mode) => set({ money: { ...rules.money, mode } })}
-            options={[
-              { value: 'pairwise', label: 'Untereinander' },
-              { value: 'pot', label: 'In die Kasse' },
-            ]}
-          />
-          <p className="section__hint">
-            {rules.money.mode === 'pairwise'
-              ? 'Wer im Minus ist, zahlt an die Spieler im Plus: Punkte × Betrag.'
-              : 'Jeder zahlt seinen Abstand zum Ersten in die Kasse, z. B. für den nächsten Ausflug.'}
-          </p>
-        </div>
+        <Switch
+          label="Um Geld spielen"
+          hint="Zeigt am Ende, wer wem wie viel zahlt"
+          checked={rules.money.enabled}
+          onChange={(enabled) => set({ money: { ...rules.money, enabled } })}
+        />
+        {rules.money.enabled && (
+          <>
+            <div className="field">
+              <span className="field__label">Betrag pro Punkt</span>
+              <div className="chips">
+                {RATES.map((c) => (
+                  <button
+                    key={c}
+                    type="button"
+                    className="chip"
+                    aria-pressed={rules.money.centsPerPoint === c}
+                    onClick={() => set({ money: { ...rules.money, centsPerPoint: c } })}
+                  >
+                    {c} ct
+                  </button>
+                ))}
+                {!RATES.includes(rules.money.centsPerPoint) && (
+                  <span className="chip" aria-pressed="true">
+                    {formatEuro(rules.money.centsPerPoint)}
+                  </span>
+                )}
+              </div>
+            </div>
+            <div className="field">
+              <span className="field__label">Abrechnen</span>
+              <Segmented
+                label="Abrechnungsart"
+                value={rules.money.mode}
+                onChange={(mode) => set({ money: { ...rules.money, mode } })}
+                options={[
+                  { value: 'pairwise', label: 'Untereinander' },
+                  { value: 'pot', label: 'In die Kasse' },
+                ]}
+              />
+              <p className="section__hint">
+                {rules.money.mode === 'pairwise'
+                  ? 'Wer im Minus ist, zahlt an die Spieler im Plus: Punkte × Betrag.'
+                  : 'Jeder zahlt seinen Abstand zum Ersten in die Kasse, z. B. für den nächsten Ausflug.'}
+              </p>
+            </div>
+          </>
+        )}
       </Section>
     </div>
   );
@@ -174,6 +185,6 @@ export function rulesSummary(r: Rules): string {
   parts.push(r.bock.enabled ? `Bock ${r.bock.mode === 'overlap' ? 'überlagernd' : 'nacheinander'}` : 'ohne Bock');
   if (r.pflichtsolo.enabled) parts.push('Pflichtsolo');
   parts.push(r.rounds ? `${r.rounds} Runden` : 'offenes Ende');
-  parts.push(`${r.money.centsPerPoint} ct/Punkt`);
+  parts.push(r.money.enabled ? `${r.money.centsPerPoint} ct/Punkt` : 'ohne Abrechnung');
   return parts.join(' · ');
 }

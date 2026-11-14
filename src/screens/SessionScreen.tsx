@@ -11,7 +11,8 @@ import { actions, getState, loadPrefs, savePrefs, useAppData, useSession, type P
 import type { Game, PlayerId, Session } from '../state/types';
 import { GameDetailSheet } from './GameDetail';
 import { GameEntrySheet } from './GameEntry';
-import { MoneyView, resultText } from './MoneyView';
+import { resultText } from '../logic/shareText';
+import { MoneyView } from './MoneyView';
 import { BockSheet, PlayersSheet, RenameSheet, RulesSheet } from './SessionSheets';
 import { StatsView } from './StatsView';
 
@@ -19,8 +20,10 @@ export type SessionTab = 'block' | 'stats' | 'money';
 
 type SheetName = null | 'menu' | 'players' | 'rules' | 'bock' | 'rename' | 'finish' | 'delete';
 
-export function SessionScreen({ id, tab }: { id: string; tab: SessionTab }) {
+export function SessionScreen({ id, tab: requestedTab }: { id: string; tab: SessionTab }) {
   const session = useSession(id);
+  const moneyOn = session?.rules.money.enabled ?? true;
+  const tab: SessionTab = requestedTab === 'money' && !moneyOn ? 'block' : requestedTab;
   const data = useAppData();
   const toast = useToast();
   const [prefs, setPrefsState] = useState<Prefs>(loadPrefs);
@@ -126,11 +129,13 @@ export function SessionScreen({ id, tab }: { id: string; tab: SessionTab }) {
                 ['stats', 'Statistik', 'chart'],
                 ['money', 'Abrechnung', 'coins'],
               ] as const
-            ).map(([t, label, icon]) => (
-              <button key={t} type="button" className="tab" aria-current={tab === t ? 'page' : undefined} onClick={() => setTab(t)}>
-                <Icon name={icon} size={18} /> {label}
-              </button>
-            ))}
+            )
+              .filter(([t]) => t !== 'money' || moneyOn)
+              .map(([t, label, icon]) => (
+                <button key={t} type="button" className="tab" aria-current={tab === t ? 'page' : undefined} onClick={() => setTab(t)}>
+                  <Icon name={icon} size={18} /> {label}
+                </button>
+              ))}
           </nav>
         </header>
         {tab === 'block' && <BlockHead session={session} view={view} />}
@@ -265,7 +270,7 @@ export function SessionScreen({ id, tab }: { id: string; tab: SessionTab }) {
         onClose={() => setSheet(null)}
         onConfirm={() => {
           actions.updateSession(session.id, (s) => ({ ...s, finishedAt: Date.now() }));
-          setTab('money');
+          setTab(moneyOn ? 'money' : 'stats');
         }}
       />
       <ConfirmSheet

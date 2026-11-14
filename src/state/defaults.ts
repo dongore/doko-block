@@ -18,7 +18,7 @@ export const DEFAULT_RULES: Rules = {
   reKontra: 'plus2',
   sitOut: 'opposite',
   rounds: null,
-  money: { centsPerPoint: 5, mode: 'pairwise' },
+  money: { enabled: true, centsPerPoint: 5, mode: 'pairwise' },
 };
 
 export const emptyData = (): AppData => ({
