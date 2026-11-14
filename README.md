@@ -21,7 +21,7 @@ A digital **Doppelkopf-Spielblock** (score pad) as an installable web app (PWA).
 |---|---|
 | Gewonnen | 1 |
 | Unter 90 / 60 / 30 gespielt, schwarz | 1 each |
-| Re / Kontra angesagt | 2 each (switchable: each doubles the whole game value instead) |
+| Re / Kontra angesagt | 2 each (switchable: each doubles the game points instead; Sonderpunkte are added afterwards and not doubled) |
 | Each Absage (keine 90 / 60 / 30 / schwarz) | 1 each |
 | 120 against keine 90, 90 against keine 60, 60 against keine 30, 30 against schwarz | 1 each |
 | Gegen die Alten, Fuchs, Doppelkopf, Karlchen (normal games only) | 1 each |

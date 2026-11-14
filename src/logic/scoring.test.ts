@@ -77,14 +77,15 @@ describe('game value', () => {
     });
     expect(score(c)).toBe(-1); // Re +1, Kontra +2
   });
-  it('can double the game value for Re and Kontra instead of adding 2', () => {
+  it('can double the game points for Re and Kontra instead of adding 2, without doubling Sonderpunkte', () => {
     const D = { ...R, reKontra: 'double' as const };
     const v = (c: CalcInput, solo = false) => scoreCalc(c, solo, D).reValue;
     expect(v(calc(130, 1))).toBe(2); // gewonnen 1, ×2
     expect(v(calc(130, 1, 1))).toBe(4); // gewonnen 1, ×2 ×2
     expect(v(calc(160, 2))).toBe(6); // gewonnen, unter 90, keine 90 = 3, ×2
-    expect(v(calc(110, 1, 1))).toBe(-8); // Kontra: gewonnen + gegen die Alten = 2, ×4
-    expect(v(calc(125, 1, 0, { kontraExtras: { ...emptyExtras(), fuchs: 1 } }))).toBe(0); // (1 − 1) ×2
+    expect(v(calc(110, 1, 1))).toBe(-5); // Kontra: gewonnen 1 ×4, then gegen die Alten +1
+    expect(v(calc(130, 1, 0, { reExtras: { ...emptyExtras(), fuchs: 1, doppelkopf: 1 } }))).toBe(4); // 1 ×2, then +2 Sonderpunkte
+    expect(v(calc(125, 1, 0, { kontraExtras: { ...emptyExtras(), fuchs: 1 } }))).toBe(1); // 1 ×2, then −1 Fuchs
     expect(v(calc(130, 1), true)).toBe(2); // solo: per opponent, soloist gets ×3 later
     expect(v(calc(175, 3, 2))).toBe(2); // no winner: nothing doubled (like TSR 7.1.3)
     expect(scoreCalc(calc(130, 1, 1), false, D).factors.map((f) => f.factor)).toEqual([2, 2]);

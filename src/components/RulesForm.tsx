@@ -34,7 +34,7 @@ export function RulesForm({ rules, onChange, playerCount }: { rules: Rules; onCh
         <p className="section__hint">
           {rules.reKontra === 'plus2'
             ? 'Re und Kontra bringen dem Gewinner je 2 Punkte zusätzlich.'
-            : 'Re und Kontra verdoppeln jeweils den ganzen Spielwert, beide zusammen vervierfachen ihn.'}
+            : 'Re und Kontra verdoppeln jeweils die Spielpunkte, beide zusammen vervierfachen sie. Sonderpunkte werden danach addiert und nicht verdoppelt.'}
         </p>
       </Section>
 

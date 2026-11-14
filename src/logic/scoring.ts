@@ -169,14 +169,17 @@ export function scoreCalc(c: CalcInput, solo: boolean, rules: Rules): GameResult
     }
   }
 
-  // Doubling variant: each announcement doubles the whole game value (only when someone won, like the +2 in TSR 7.1.3).
+  // Doubling variant: each announcement doubles the game points (only when someone won, like the +2 in TSR 7.1.3).
+  // Sonderpunkte are added afterwards and never doubled.
   const factors: GameResult['factors'] = [];
   if (winner && rules.reKontra === 'double') {
     if (ann.re >= 1) factors.push({ label: 'Re angesagt', factor: 2 });
     if (ann.kontra >= 1) factors.push({ label: 'Kontra angesagt', factor: 2 });
   }
-  const sum = lines.reduce((s, l) => s + (l.party === 're' ? l.points : -l.points), 0);
-  const reValue = factors.reduce((v, f) => v * f.factor, sum);
+  const net = (ls: ResultLine[]) => ls.reduce((s, l) => s + (l.party === 're' ? l.points : -l.points), 0);
+  const gamePoints = net(lines.filter((l) => l.kind !== 'extra'));
+  const sonderpunkte = net(lines.filter((l) => l.kind === 'extra'));
+  const reValue = factors.reduce((v, f) => v * f.factor, gamePoints) + sonderpunkte;
   return { winner, reValue, lines, factors, note };
 }
 

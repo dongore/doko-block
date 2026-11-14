@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Breakdown } from '../components/Breakdown';
 import { Icon } from '../components/Icon';
 import { Sheet } from '../components/ui';
 import { signed } from '../logic/format';
@@ -136,22 +137,7 @@ export function GameDetailSheet({
         {result.note && <p className="result__note">{result.note}</p>}
 
         {game.mode === 'calc' && result.lines.length > 0 && (
-          <ul className="breakdown">
-            {result.lines.map((l, i) => (
-              <li key={i} className={`breakdown__line party-${l.party}`}>
-                <span className="breakdown__label">{l.label}</span>
-                <span className="breakdown__party">{l.party === 're' ? reLabel : 'Kontra'}</span>
-                <span className="breakdown__pts num">+{l.points}</span>
-              </li>
-            ))}
-            {result.factors.map((f) => (
-              <li key={f.label} className="breakdown__line breakdown__factor">
-                <span className="breakdown__label">{f.label}</span>
-                <span className="breakdown__party">verdoppelt</span>
-                <span className="breakdown__pts num">×{f.factor}</span>
-              </li>
-            ))}
-          </ul>
+          <Breakdown result={result} reLabel={reLabel} />
         )}
 
         <div className="deltas">

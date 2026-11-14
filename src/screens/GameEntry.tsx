@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { Breakdown } from '../components/Breakdown';
 import { Icon } from '../components/Icon';
 import { Section, Segmented, Sheet, Stepper } from '../components/ui';
 import { signed, uid } from '../logic/format';
@@ -654,29 +655,19 @@ function EntryInner({
           <Section title="Ergebnis" className="result">
             {result.note && <p className="result__note">{result.note}</p>}
             {result.lines.length > 0 && d.mode === 'calc' && (
-              <ul className="breakdown">
-                {result.lines.map((l, i) => (
-                  <li key={i} className={`breakdown__line party-${l.party}`}>
-                    <span className="breakdown__label">{l.label}</span>
-                    <span className="breakdown__party">{l.party === 're' ? reLabel : 'Kontra'}</span>
-                    <span className="breakdown__pts num">+{l.points}</span>
+              <Breakdown
+                result={result}
+                reLabel={reLabel}
+                total={
+                  <li className="breakdown__total">
+                    <span>Spielwert</span>
+                    <span className="num">
+                      {value}
+                      {multiplier > 1 && value > 0 && <span className="bock-text"> ×{multiplier} = {value * multiplier}</span>}
+                    </span>
                   </li>
-                ))}
-                {result.factors.map((f) => (
-                  <li key={f.label} className="breakdown__line breakdown__factor">
-                    <span className="breakdown__label">{f.label}</span>
-                    <span className="breakdown__party">verdoppelt</span>
-                    <span className="breakdown__pts num">×{f.factor}</span>
-                  </li>
-                ))}
-                <li className="breakdown__total">
-                  <span>Spielwert</span>
-                  <span className="num">
-                    {value}
-                    {multiplier > 1 && value > 0 && <span className="bock-text"> ×{multiplier} = {value * multiplier}</span>}
-                  </span>
-                </li>
-              </ul>
+                }
+              />
             )}
             <div className="deltas">
               {d.playerIds.map((id) => {
