@@ -78,6 +78,17 @@ describe('session replay', () => {
     expect(DEFAULT_RULES.money.enabled).toBe(false);
   });
 
+  it('names who leads the next game: the first player at the table left of the dealer', () => {
+    const four = mkSession(['a', 'b', 'c', 'd']);
+    expect(computeSession(four).next).toMatchObject({ dealerId: 'a', leaderId: 'b' });
+    const five = mkSession(['a', 'b', 'c', 'd', 'e']);
+    five.firstDealerId = 'e';
+    expect(computeSession(five).next).toMatchObject({ dealerId: 'e', leaderId: 'a' });
+    const six = mkSession(['a', 'b', 'c', 'd', 'e', 'f'], { sitOut: 'left4' });
+    six.nextDealerId = 'c';
+    expect(computeSession(six).next).toMatchObject({ dealerId: 'c', leaderId: 'd' });
+  });
+
   it('keeps the dealer after a Pflichtsolo and tracks it', () => {
     const s = mkSession(['a', 'b', 'c', 'd'], { pflichtsolo: { enabled: true, dealerStays: true } });
     s.games.push(quick('a', ['a', 'b', 'c', 'd'], ['c'], 1, { kind: 'solo', pflicht: true }));

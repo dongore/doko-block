@@ -34,6 +34,8 @@ export interface NextGame {
   /** Position of this deal within its round, 1-based. */
   dealInRound: number;
   dealerId: PlayerId;
+  /** Leads the first trick ("kommt raus"): the first player at the table left of the dealer. */
+  leaderId: PlayerId;
   playerIds: PlayerId[];
   sittingOut: PlayerId[];
   bock: BockStatus;
@@ -238,6 +240,7 @@ export function computeSession(session: Session): SessionView {
       round: Math.floor(deals / roundSize) + 1,
       dealInRound: (deals % roundSize) + 1,
       dealerId,
+      leaderId: leaderOf({ dealerId, playerIds: table.playing }, session),
       playerIds: table.playing,
       sittingOut: table.out,
       bock: rules.bock.enabled ? bock.status() : { multiplier: 1, remainingGames: 0, layers: [] },

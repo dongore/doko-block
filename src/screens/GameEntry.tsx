@@ -5,7 +5,7 @@ import { Section, Segmented, Sheet, Stepper } from '../components/ui';
 import { signed, uid } from '../logic/format';
 import { KIND_LABEL, SOLO_TYPES } from '../logic/labels';
 import { AUTO_TRIGGERS, baseDeltas, detectBockTriggers, emptyExtras, partyName, scoreGame, TRIGGER_LABEL } from '../logic/scoring';
-import { dealOutcome, isAnnouncedSolo, type SessionView } from '../logic/session';
+import { dealOutcome, isAnnouncedSolo, leaderOf, type SessionView } from '../logic/session';
 import { LEVEL_LABEL, resultOptions, TIE_AUGEN, type ResultLevel } from '../logic/resultEntry';
 import { loadPrefs, savePrefs } from '../state/store';
 import type { Ann, BockTrigger, Extras, Game, GameKind, Party, PlayerId, Session, SoloType } from '../state/types';
@@ -158,13 +158,18 @@ function EntryInner({
     return session.games.some((g) => g.id !== editing?.id && g.kind === 'solo' && g.pflicht && g.reIds[0] === soloist);
   }, [soloist, session.games, editing?.id]);
   const pflicht = rules.pflichtsolo.enabled && solo ? (d.pflicht ?? !pflichtAlready) : false;
-  const dealHint = (() => {
+  const outcome = (() => {
     if (!soloist) return null;
     const round = editView ? editView.round : view.next.round;
     const before = editView ? editView.index : view.games.length;
     const earlier = view.games.some((g) => g.index < before && g.round === round && isAnnouncedSolo(g.game) && g.game.reIds[0] === soloist);
     const g = { kind: d.kind, pflicht, soloType: d.soloType ?? undefined, reIds: d.reIds, dealerId, playerIds: d.playerIds };
-    switch (dealOutcome(g, rules, session, earlier)) {
+    return dealOutcome(g, rules, session, earlier);
+  })();
+  const leadId = soloist && (outcome === 'pflicht' || outcome === 'lust') ? soloist : leaderOf({ dealerId, playerIds: d.playerIds }, session);
+  const dealHint = (() => {
+    if (!soloist) return null;
+    switch (outcome) {
       case 'pflicht':
         return `Pflichtsolo: ${name(soloist)} kommt raus, ${name(dealerId)} gibt danach noch einmal.`;
       case 'lust':
@@ -313,7 +318,7 @@ function EntryInner({
       title={editing ? `Spiel ${number} bearbeiten` : `Spiel ${number}`}
       subtitle={
         <>
-          {name(dealerId)} gibt
+          {name(dealerId)} gibt · {name(leadId)} kommt raus
           {multiplier > 1 && <span className="bock-pill bock-pill--sm">Bock ×{multiplier}</span>}
         </>
       }

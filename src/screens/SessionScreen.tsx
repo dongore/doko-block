@@ -333,6 +333,7 @@ function BlockHead({ session, view }: { session: Session; view: SessionView }) {
           const seated = session.seating.includes(id);
           const total = view.totals[id] ?? 0;
           const isDealer = !finished && view.next.dealerId === id;
+          const isLeader = !finished && view.next.leaderId === id;
           const out = !finished && seated && view.next.sittingOut.includes(id);
           return (
             <div
@@ -353,6 +354,12 @@ function BlockHead({ session, view }: { session: Session; view: SessionView }) {
                   </span>
                 )}
                 {out && !isDealer && <span className="flag">aus</span>}
+                {isLeader && (
+                  <span className="lead-mark" title="kommt raus">
+                    <Icon name="play" size={9} strokeWidth={3} />
+                    <span className="sr-only">kommt raus</span>
+                  </span>
+                )}
                 {session.rules.pflichtsolo.enabled && seated && (
                   <span className={`pflicht-mark${view.pflichtDone[id] ? ' is-done' : ''}`} title={view.pflichtDone[id] ? 'Pflichtsolo gespielt' : 'Pflichtsolo offen'}>
                     P<span className="sr-only">{view.pflichtDone[id] ? 'flichtsolo gespielt' : 'flichtsolo offen'}</span>
@@ -394,6 +401,8 @@ function BlockBody({
       <strong>{name(next.dealerId)}</strong> gibt
       {next.sittingOut.filter((x) => x !== next.dealerId).length > 0 && <> · {next.sittingOut.filter((x) => x !== next.dealerId).map(name).join(', ')} aus</>}
       {next.sittingOut.includes(next.dealerId) && next.sittingOut.length === 1 && <> und setzt aus</>}
+      {' · '}
+      <strong>{name(next.leaderId)}</strong> kommt raus
     </>
   );
 
@@ -430,7 +439,8 @@ function BlockBody({
         <button type="button" id="next-row" className="next-row" onClick={onNew}>
           <span className="next-row__no num">{next.number}</span>
           <span className="next-row__text">
-            {view.plannedDone ? 'Zusatzspiel' : `Runde ${next.round}${rounds ? ` von ${rounds}` : ''}`} · {nextText}
+            {view.plannedDone && 'Zusatzspiel · '}
+            {nextText}
           </span>
           {next.bock.multiplier > 1 && <span className="bock-pill bock-pill--sm">×{next.bock.multiplier}</span>}
         </button>
