@@ -21,6 +21,23 @@ export function RulesForm({ rules, onChange, playerCount }: { rules: Rules; onCh
         <Switch label="Gegen die Alten" hint="+1, wenn Kontra ein Normalspiel gewinnt" checked={ex.gegenDieAlten} onChange={(v) => set({ extras: { ...ex, gegenDieAlten: v } })} />
       </Section>
 
+      <Section title="Re & Kontra" className="rules__group">
+        <Segmented
+          label="Re und Kontra"
+          value={rules.reKontra}
+          onChange={(reKontra) => set({ reKontra })}
+          options={[
+            { value: 'plus2', label: '+2 Punkte (DDV)' },
+            { value: 'double', label: 'Verdoppeln' },
+          ]}
+        />
+        <p className="section__hint">
+          {rules.reKontra === 'plus2'
+            ? 'Re und Kontra bringen dem Gewinner je 2 Punkte zusätzlich.'
+            : 'Re und Kontra verdoppeln jeweils den ganzen Spielwert, beide zusammen vervierfachen ihn.'}
+        </p>
+      </Section>
+
       <Section title="Bockrunden" className="rules__group">
         <Switch label="Mit Bockrunden spielen" hint="Im Bock zählt jedes Spiel doppelt" checked={bock.enabled} onChange={(v) => set({ bock: { ...bock, enabled: v } })} />
         {bock.enabled && (
@@ -153,6 +170,7 @@ export function rulesSummary(r: Rules): string {
   const parts: string[] = [];
   const ex = [r.extras.fuchs && 'Fuchs', r.extras.doppelkopf && 'Doppelkopf', r.extras.karlchen && 'Karlchen', r.extras.dulle && 'Dulle'].filter(Boolean);
   parts.push(ex.length ? ex.join(', ') : 'ohne Sonderpunkte');
+  if (r.reKontra === 'double') parts.push('Re/Kontra verdoppeln');
   parts.push(r.bock.enabled ? `Bock ${r.bock.mode === 'overlap' ? 'überlagernd' : 'nacheinander'}` : 'ohne Bock');
   if (r.pflichtsolo.enabled) parts.push('Pflichtsolo');
   parts.push(r.rounds ? `${r.rounds} Runden` : 'offenes Ende');

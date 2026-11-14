@@ -13,6 +13,8 @@ export interface GameResult {
   /** Net game value from the Re party's point of view (negative when Kontra comes out ahead). */
   reValue: number;
   lines: ResultLine[];
+  /** Multipliers applied to the summed lines (Re/Kontra when they double the game value). */
+  factors: { label: string; factor: number }[];
   /** Why the winner won, in words (e.g. thresholds that applied). */
   note?: string;
 }
@@ -128,8 +130,10 @@ export function scoreCalc(c: CalcInput, solo: boolean, rules: Rules): GameResult
     if (la < 60) lines.push({ label: 'Unter 60 gespielt', party: winner, points: 1, kind: 'base' });
     if (la < 30) lines.push({ label: 'Unter 30 gespielt', party: winner, points: 1, kind: 'base' });
     if (la === 0) lines.push({ label: 'Schwarz gespielt', party: winner, points: 1, kind: 'base' });
-    if (ann.re >= 1) lines.push({ label: 'Re angesagt', party: winner, points: 2, kind: 'ansage' });
-    if (ann.kontra >= 1) lines.push({ label: 'Kontra angesagt', party: winner, points: 2, kind: 'ansage' });
+    if (rules.reKontra === 'plus2') {
+      if (ann.re >= 1) lines.push({ label: 'Re angesagt', party: winner, points: 2, kind: 'ansage' });
+      if (ann.kontra >= 1) lines.push({ label: 'Kontra angesagt', party: winner, points: 2, kind: 'ansage' });
+    }
     for (const p of ['re', 'kontra'] as Party[]) {
       for (let lvl = 2; lvl <= ann[p]; lvl++) {
         lines.push({ label: `${partyName(p)}: ${ABSAGE_LABEL[lvl]} abgesagt`, party: winner, points: 1, kind: 'absage' });
@@ -165,8 +169,15 @@ export function scoreCalc(c: CalcInput, solo: boolean, rules: Rules): GameResult
     }
   }
 
-  const reValue = lines.reduce((s, l) => s + (l.party === 're' ? l.points : -l.points), 0);
-  return { winner, reValue, lines, note };
+  // Doubling variant: each announcement doubles the whole game value (only when someone won, like the +2 in TSR 7.1.3).
+  const factors: GameResult['factors'] = [];
+  if (winner && rules.reKontra === 'double') {
+    if (ann.re >= 1) factors.push({ label: 'Re angesagt', factor: 2 });
+    if (ann.kontra >= 1) factors.push({ label: 'Kontra angesagt', factor: 2 });
+  }
+  const sum = lines.reduce((s, l) => s + (l.party === 're' ? l.points : -l.points), 0);
+  const reValue = factors.reduce((v, f) => v * f.factor, sum);
+  return { winner, reValue, lines, factors, note };
 }
 
 export function scoreGame(game: Game, rules: Rules): GameResult {
@@ -174,11 +185,12 @@ export function scoreGame(game: Game, rules: Rules): GameResult {
   if (game.mode === 'calc' && game.calc) return scoreCalc(game.calc, solo, rules);
   const q = game.quick ?? { winner: null, value: 0 };
   const v = Math.max(0, Math.round(q.value));
-  if (!q.winner || v === 0) return { winner: q.winner ?? null, reValue: 0, lines: [] };
+  if (!q.winner || v === 0) return { winner: q.winner ?? null, reValue: 0, lines: [], factors: [] };
   return {
     winner: q.winner,
     reValue: q.winner === 're' ? v : -v,
     lines: [{ label: 'Spielwert', party: q.winner, points: v, kind: 'base' }],
+    factors: [],
   };
 }
 

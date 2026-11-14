@@ -100,6 +100,8 @@ export interface Rules {
     /** House rule: the soloist leads, so the same player deals again – unless the soloist would have led anyway. */
     dealerStays: boolean;
   };
+  /** How "Re" and "Kontra" count: +2 points each (DDV) or doubling the game value each. */
+  reKontra: 'plus2' | 'double';
   /** Who sits out with 6/7 players: opposite = dealer + player(s) opposite, left4 = the four left of dealer play. */
   sitOut: 'opposite' | 'left4';
   /** Planned number of rounds, null = open end. */

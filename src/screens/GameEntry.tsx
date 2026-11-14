@@ -572,6 +572,13 @@ function EntryInner({
                     <span className="breakdown__pts num">+{l.points}</span>
                   </li>
                 ))}
+                {result.factors.map((f) => (
+                  <li key={f.label} className="breakdown__line breakdown__factor">
+                    <span className="breakdown__label">{f.label}</span>
+                    <span className="breakdown__party">verdoppelt</span>
+                    <span className="breakdown__pts num">×{f.factor}</span>
+                  </li>
+                ))}
                 <li className="breakdown__total">
                   <span>Spielwert</span>
                   <span className="num">

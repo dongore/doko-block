@@ -2096,6 +2096,12 @@ ol {
   font-weight: 700;
   font-size: var(--fs-base);
 }
+.breakdown__factor .breakdown__party {
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 600;
+  color: var(--ink-3);
+}
 .breakdown__total {
   grid-template-columns: minmax(0, 1fr) auto;
   border-bottom: 0;
