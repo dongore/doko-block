@@ -34,6 +34,7 @@ describe('winner', () => {
   });
   it('has no winner when both miss their Absage', () => {
     expect(determineWinner(calc(130, 2, 2)).winner).toBe(null);
+    expect(determineWinner(calc(175, 3, 2)).winner).toBe(null);
   });
 });
 
@@ -60,6 +61,14 @@ describe('game value', () => {
     expect(score(calc(115, 2))).toBe(-6);
     // Re: keine 60, Kontra gets 70: gewonnen, Re 2, k90 1, k60 1, gegen die Alten 1 = 6
     expect(score(calc(170, 3))).toBe(-6);
+  });
+  it('still counts unter 90 and points against Absagen without a winner (TSR 7.1.3)', () => {
+    // Re: keine 60 missed (Kontra 65), Kontra: keine 90 missed (Re 175).
+    // Re gets "unter 90 gespielt" and "120 gegen keine 90"; no Gewonnen, no Absage points.
+    const r = scoreCalc(calc(175, 3, 2), false, R);
+    expect(r.winner).toBe(null);
+    expect(r.lines.map((l) => l.label)).toEqual(['Unter 90 gespielt', '120 gegen keine 90']);
+    expect(r.reValue).toBe(2);
   });
   it('nets Sonderpunkte regardless of winner', () => {
     const c = calc(125, 0, 0, {
@@ -106,9 +115,17 @@ describe('deltas', () => {
 });
 
 describe('bock triggers', () => {
-  it('detects 120:120, lost announcement and Nullspiel', () => {
+  it('starts Bock after a lost Kontra but not after a lost Re by default', () => {
+    const lostKontra = game({ calc: calc(130, 0, 1) });
+    expect(detectBockTriggers(lostKontra, scoreGame(lostKontra, R), R)).toEqual(['lostKontra']);
+    const lostRe = game({ calc: calc(110, 1, 0) });
+    expect(detectBockTriggers(lostRe, scoreGame(lostRe, R), R)).toEqual([]);
+    const rules = { ...R, bock: { ...R.bock, triggers: { ...R.bock.triggers, lostRe: true } } };
+    expect(detectBockTriggers(lostRe, scoreGame(lostRe, rules), rules)).toEqual(['lostRe']);
+  });
+  it('detects 120:120 and Nullspiel', () => {
     const g = game({ calc: calc(120, 1) });
-    expect(detectBockTriggers(g, scoreGame(g, R), R)).toEqual(['tie120', 'lostAnnounced']);
+    expect(detectBockTriggers(g, scoreGame(g, R), R)).toEqual(['tie120']);
     const z = game({
       calc: calc(121, 0, 0, { kontraExtras: { fuchs: 1, doppelkopf: 0, karlchen: 0 } }),
     });

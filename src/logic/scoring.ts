@@ -1,4 +1,4 @@
-import type { Ann, BockTrigger, CalcInput, Extras, Game, Party, PlayerId, Rules } from '../state/types';
+import type { Ann, AutoTrigger, BockTrigger, CalcInput, Extras, Game, Party, PlayerId, Rules } from '../state/types';
 
 /** One line of the score breakdown. Points always count for `party`. */
 export interface ResultLine {
@@ -110,6 +110,16 @@ export function scoreCalc(c: CalcInput, solo: boolean, rules: Rules): GameResult
   const augen: Record<Party, number> = { re: c.reAugen, kontra: 240 - c.reAugen };
   const ann: Record<Party, Ann> = { re: c.reAnn, kontra: c.kontraAnn };
 
+  if (!winner) {
+    // TSR 7.1.3: nobody won, but "unter 90/60/30 gespielt" still counts for the side whose opponents stayed below.
+    for (const p of ['re', 'kontra'] as Party[]) {
+      const oa = augen[other(p)];
+      if (oa < 90) lines.push({ label: 'Unter 90 gespielt', party: p, points: 1, kind: 'base' });
+      if (oa < 60) lines.push({ label: 'Unter 60 gespielt', party: p, points: 1, kind: 'base' });
+      if (oa < 30) lines.push({ label: 'Unter 30 gespielt', party: p, points: 1, kind: 'base' });
+    }
+  }
+
   if (winner) {
     const loser = other(winner);
     const la = augen[loser];
@@ -186,18 +196,21 @@ export function detectBockTriggers(game: Game, result: GameResult, rules: Rules)
   const t = rules.bock.triggers;
   const out: BockTrigger[] = [];
   const solo = isSoloKind(game.kind);
-  if (t.tie120 && game.mode === 'calc' && game.calc?.reAugen === 120) out.push('tie120');
-  if (t.lostAnnounced && game.mode === 'calc' && game.calc) {
-    const c = game.calc;
-    if ((c.reAnn >= 1 && result.winner !== 're') || (c.kontraAnn >= 1 && result.winner !== 'kontra')) out.push('lostAnnounced');
-  }
+  const c = game.mode === 'calc' ? game.calc : undefined;
+  if (t.tie120 && c?.reAugen === 120) out.push('tie120');
+  if (t.lostKontra && c && c.kontraAnn >= 1 && result.winner !== 'kontra') out.push('lostKontra');
+  if (t.lostRe && c && c.reAnn >= 1 && result.winner !== 're') out.push('lostRe');
   if (t.lostSolo && solo && result.winner !== 're') out.push('lostSolo');
   if (t.zeroGame && result.reValue === 0) out.push('zeroGame');
   return out;
 }
 
-export const TRIGGER_LABEL: Record<BockTrigger, string> = {
+export const AUTO_TRIGGERS: AutoTrigger[] = ['tie120', 'lostKontra', 'lostRe', 'lostSolo', 'zeroGame'];
+
+export const TRIGGER_LABEL: Record<BockTrigger | 'lostAnnounced', string> = {
   tie120: '120 : 120',
+  lostKontra: 'Kontra verloren',
+  lostRe: 'Re verloren',
   lostAnnounced: 'Ansage verloren',
   lostSolo: 'Solo verloren',
   zeroGame: 'Nullspiel',

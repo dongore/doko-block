@@ -1,11 +1,14 @@
 import type { AppData, Rules } from './types';
 
+/** Saved data from before the Re/Kontra split had a single "lostAnnounced" switch. */
+type LegacyTriggers = Partial<Rules['bock']['triggers']> & { lostAnnounced?: boolean };
+
 export const DEFAULT_RULES: Rules = {
   extras: { fuchs: true, doppelkopf: true, karlchen: true, gegenDieAlten: true },
   bock: {
     enabled: true,
     mode: 'sequential',
-    triggers: { tie120: true, lostAnnounced: true, lostSolo: false, zeroGame: true },
+    triggers: { tie120: true, lostKontra: true, lostRe: false, lostSolo: false, zeroGame: true },
   },
   pflichtsolo: { enabled: true, dealerStays: true },
   sitOut: 'opposite',
@@ -23,12 +26,14 @@ export const emptyData = (): AppData => ({
 /** Fill in fields that older saved data may lack. */
 export function normalizeRules(r: Partial<Rules> | undefined): Rules {
   const d = DEFAULT_RULES;
+  const { lostAnnounced, ...saved }: LegacyTriggers = r?.bock?.triggers ?? {};
+  const legacy = lostAnnounced === undefined ? {} : { lostKontra: lostAnnounced };
   return {
     extras: { ...d.extras, ...r?.extras },
     bock: {
       ...d.bock,
       ...r?.bock,
-      triggers: { ...d.bock.triggers, ...r?.bock?.triggers },
+      triggers: { ...d.bock.triggers, ...legacy, ...saved },
     },
     pflichtsolo: { ...d.pflichtsolo, ...r?.pflichtsolo },
     sitOut: r?.sitOut ?? d.sitOut,

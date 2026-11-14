@@ -3,7 +3,7 @@ import { Icon } from '../components/Icon';
 import { Section, Segmented, Sheet, Stepper } from '../components/ui';
 import { signed, uid } from '../logic/format';
 import { KIND_LABEL, SOLO_TYPES } from '../logic/labels';
-import { baseDeltas, detectBockTriggers, emptyExtras, partyName, scoreGame, TRIGGER_LABEL } from '../logic/scoring';
+import { AUTO_TRIGGERS, baseDeltas, detectBockTriggers, emptyExtras, partyName, scoreGame, TRIGGER_LABEL } from '../logic/scoring';
 import type { SessionView } from '../logic/session';
 import { loadPrefs, savePrefs } from '../state/store';
 import type { Ann, BockTrigger, Extras, Game, GameKind, Party, PlayerId, Session, SoloType } from '../state/types';
@@ -34,7 +34,7 @@ function initialDraft(session: Session, view: SessionView, editing?: Game): Draf
     const detected = new Set(detectBockTriggers(editing, scoreGame(editing, session.rules), session.rules));
     const stored: BockTrigger[] = editing.bockTriggers.filter((t) => t !== 'manual');
     const overrides: Draft['overrides'] = {};
-    for (const t of ['tie120', 'lostAnnounced', 'lostSolo', 'zeroGame'] as BockTrigger[]) {
+    for (const t of AUTO_TRIGGERS) {
       const has = stored.includes(t);
       if (has !== detected.has(t)) overrides[t] = has;
     }
@@ -178,7 +178,7 @@ function EntryInner({
   const result = game ? scoreGame(game, rules) : null;
   const detected = game && result ? detectBockTriggers(game, result, rules) : [];
   const triggerOn = (t: BockTrigger) => d.overrides[t] ?? detected.includes(t);
-  const enabledTriggers = (['tie120', 'lostAnnounced', 'lostSolo', 'zeroGame'] as const).filter((t) => rules.bock.triggers[t]);
+  const enabledTriggers = AUTO_TRIGGERS.filter((t) => rules.bock.triggers[t]);
   const triggers: BockTrigger[] = rules.bock.enabled ? [...enabledTriggers.filter(triggerOn), ...Array(d.manual).fill('manual')] : [];
   const deltas = game && result ? baseDeltas(game, result.reValue) : {};
 

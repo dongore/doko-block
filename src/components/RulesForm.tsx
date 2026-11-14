@@ -26,7 +26,8 @@ export function RulesForm({ rules, onChange, playerCount }: { rules: Rules; onCh
           <>
             <p className="section__hint">Automatisch auslösen nach …</p>
             <Switch label="120 : 120" hint="Gleichstand der Augen" checked={trig.tie120} onChange={(v) => set({ bock: { ...bock, triggers: { ...trig, tie120: v } } })} />
-            <Switch label="Ansage verloren" hint="Re oder Kontra angesagt und das Spiel verloren" checked={trig.lostAnnounced} onChange={(v) => set({ bock: { ...bock, triggers: { ...trig, lostAnnounced: v } } })} />
+            <Switch label="Kontra verloren" hint="„Kontra“ angesagt und das Spiel nicht gewonnen" checked={trig.lostKontra} onChange={(v) => set({ bock: { ...bock, triggers: { ...trig, lostKontra: v } } })} />
+            <Switch label="Re verloren" hint="„Re“ angesagt und das Spiel nicht gewonnen" checked={trig.lostRe} onChange={(v) => set({ bock: { ...bock, triggers: { ...trig, lostRe: v } } })} />
             <Switch label="Solo verloren" checked={trig.lostSolo} onChange={(v) => set({ bock: { ...bock, triggers: { ...trig, lostSolo: v } } })} />
             <Switch label="Nullspiel" hint="Spielwert 0, z. B. durch Sonderpunkte" checked={trig.zeroGame} onChange={(v) => set({ bock: { ...bock, triggers: { ...trig, zeroGame: v } } })} />
             <p className="section__hint">Bockrunden kannst du außerdem jederzeit von Hand auslösen. Eine Bockrunde dauert so viele Spiele, wie Spieler am Tisch sitzen.</p>

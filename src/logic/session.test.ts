@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { DEFAULT_RULES } from '../state/defaults';
+import { DEFAULT_RULES, normalizeRules } from '../state/defaults';
+import { sanitize } from '../state/store';
 import type { Game, Rules, Session } from '../state/types';
 import { emptyExtras } from './scoring';
 import { computeSession, ranking, tableFor } from './session';
@@ -123,6 +124,24 @@ describe('session replay', () => {
     const v = computeSession(s);
     expect(Object.values(v.totals).reduce((x, y) => x + y, 0)).toBe(0);
     expect(v.totals.d).toBe(15); // gewonnen, u90, u60, Re = 5 × 3
+  });
+});
+
+describe('saved data', () => {
+  it('maps the old combined "Ansage verloren" switch to Kontra only', () => {
+    const legacy = { bock: { enabled: true, mode: 'sequential', triggers: { tie120: true, lostAnnounced: true } } } as never;
+    const r = normalizeRules(legacy);
+    expect(r.bock.triggers.lostKontra).toBe(true);
+    expect(r.bock.triggers.lostRe).toBe(false);
+  });
+  it('splits stored "lostAnnounced" game triggers by who lost', () => {
+    const s = mkSession(['a', 'b', 'c', 'd']);
+    const base = { ...quick('a', ['a', 'b', 'c', 'd'], ['a', 'b'], 0), mode: 'calc' as const };
+    const ex = { reExtras: emptyExtras(), kontraExtras: emptyExtras() };
+    s.games.push({ ...base, calc: { reAugen: 130, reAnn: 0, kontraAnn: 1, ...ex }, bockTriggers: ['lostAnnounced' as never] });
+    s.games.push({ ...base, calc: { reAugen: 110, reAnn: 1, kontraAnn: 0, ...ex }, bockTriggers: ['lostAnnounced' as never] });
+    const data = sanitize({ sessions: [s] });
+    expect(data.sessions[0].games.map((g) => g.bockTriggers)).toEqual([['lostKontra'], ['lostRe']]);
   });
 });
 

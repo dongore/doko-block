@@ -43,7 +43,10 @@ export interface QuickInput {
   value: number;
 }
 
-export type BockTrigger = 'tie120' | 'lostAnnounced' | 'lostSolo' | 'zeroGame' | 'manual';
+export type BockTrigger = 'tie120' | 'lostKontra' | 'lostRe' | 'lostSolo' | 'zeroGame' | 'manual';
+
+/** Bock triggers that the app can detect from a game result. */
+export type AutoTrigger = Exclude<BockTrigger, 'manual'>;
 
 export interface Game {
   id: string;
@@ -77,7 +80,10 @@ export interface Rules {
     mode: 'sequential' | 'overlap';
     triggers: {
       tie120: boolean;
-      lostAnnounced: boolean;
+      /** "Kontra" was announced and the Kontra party did not win. */
+      lostKontra: boolean;
+      /** "Re" was announced and the Re party did not win. */
+      lostRe: boolean;
       lostSolo: boolean;
       zeroGame: boolean;
     };

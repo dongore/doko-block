@@ -160,7 +160,7 @@ export function RulesSheet({ session, onClose }: { session: Session; onClose: ()
       open
       onClose={onClose}
       title="Regeln"
-      subtitle="Bereits eingetragene Spiele werden neu berechnet"
+      subtitle="Punkte werden neu berechnet, ausgelöste Bockrunden bleiben"
       footer={
         <div className="btn-row">
           <button type="button" className="btn btn--ghost" onClick={onClose}>

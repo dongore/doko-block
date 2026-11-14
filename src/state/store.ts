@@ -1,6 +1,17 @@
 import { useSyncExternalStore } from 'react';
 import { emptyData, normalizeRules } from './defaults';
-import type { AppData, Game, Rules, Session } from './types';
+import { determineWinner } from '../logic/scoring';
+import type { AppData, BockTrigger, Game, Rules, Session } from './types';
+
+/** Older saves stored one "lostAnnounced" trigger; split it into Kontra or Re by who actually lost. */
+function migrateTriggers(g: Game): BockTrigger[] {
+  const list = (g.bockTriggers ?? []) as (BockTrigger | 'lostAnnounced')[];
+  return list.map((t) => {
+    if (t !== 'lostAnnounced') return t;
+    const c = g.calc;
+    return c && c.kontraAnn >= 1 && determineWinner(c).winner !== 'kontra' ? 'lostKontra' : 'lostRe';
+  });
+}
 
 const KEY = 'doko-block:v1';
 
@@ -22,7 +33,7 @@ export function sanitize(input: unknown): AppData {
   const sessions: Session[] = d.sessions.map((s) => ({
     ...s,
     rules: normalizeRules(s.rules),
-    games: (s.games ?? []).map((g) => ({ ...g, bockTriggers: g.bockTriggers ?? [] })),
+    games: (s.games ?? []).map((g) => ({ ...g, bockTriggers: migrateTriggers(g) })),
     manualBocks: s.manualBocks ?? [],
     seating: s.seating ?? s.players.map((p) => p.id),
   }));
