@@ -188,8 +188,10 @@ export interface Prefs {
   cellMode: 'stand' | 'punkte';
   entryMode: 'calc' | 'quick';
   augenParty: 're' | 'kontra';
+  /** Rechner: enter the result (winner + keine 90 …) or the exact Augen. */
+  augenInput: 'result' | 'exact';
 }
-const defaultPrefs: Prefs = { cellMode: 'stand', entryMode: 'calc', augenParty: 're' };
+const defaultPrefs: Prefs = { cellMode: 'stand', entryMode: 'calc', augenParty: 're', augenInput: 'result' };
 
 export function loadPrefs(): Prefs {
   try {

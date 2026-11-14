@@ -5,6 +5,7 @@ import { signed, uid } from '../logic/format';
 import { KIND_LABEL, SOLO_TYPES } from '../logic/labels';
 import { AUTO_TRIGGERS, baseDeltas, detectBockTriggers, emptyExtras, partyName, scoreGame, TRIGGER_LABEL } from '../logic/scoring';
 import { dealOutcome, isAnnouncedSolo, type SessionView } from '../logic/session';
+import { LEVEL_LABEL, resultOptions, TIE_AUGEN, type ResultLevel } from '../logic/resultEntry';
 import { loadPrefs, savePrefs } from '../state/store';
 import type { Ann, BockTrigger, Extras, Game, GameKind, Party, PlayerId, Session, SoloType } from '../state/types';
 
@@ -17,6 +18,11 @@ interface Draft {
   reIds: PlayerId[];
   augen: string;
   augenParty: Party;
+  augenInput: 'result' | 'exact';
+  resWinner: Party | null;
+  resLevel: ResultLevel;
+  resTie: boolean;
+  resBand: number | null;
   reAnn: Ann;
   kontraAnn: Ann;
   reExtras: Extras;
@@ -45,8 +51,13 @@ function initialDraft(session: Session, view: SessionView, editing?: Game): Draf
       soloType: editing.soloType ?? null,
       pflicht: editing.pflicht ?? null,
       reIds: [...editing.reIds],
-      augen: c ? String(prefs.augenParty === 're' ? c.reAugen : 240 - c.reAugen) : '',
+      augen: c && !c.result ? String(prefs.augenParty === 're' ? c.reAugen : 240 - c.reAugen) : '',
       augenParty: prefs.augenParty,
+      augenInput: c ? (c.result ? 'result' : 'exact') : prefs.augenInput,
+      resWinner: c?.result?.winner ?? null,
+      resLevel: (c?.result?.level ?? 0) as ResultLevel,
+      resTie: !!c?.result && c.result.winner === null,
+      resBand: c?.result ? c.reAugen : null,
       reAnn: c?.reAnn ?? 0,
       kontraAnn: c?.kontraAnn ?? 0,
       reExtras: c?.reExtras ?? emptyExtras(),
@@ -66,6 +77,11 @@ function initialDraft(session: Session, view: SessionView, editing?: Game): Draf
     reIds: [],
     augen: '',
     augenParty: prefs.augenParty,
+    augenInput: prefs.augenInput,
+    resWinner: null,
+    resLevel: 0,
+    resTie: false,
+    resBand: null,
     reAnn: 0,
     kontraAnn: 0,
     reExtras: emptyExtras(),
@@ -163,13 +179,27 @@ function EntryInner({
 
   const augenNum = d.augen.trim() === '' ? null : Number(d.augen);
   const augenValid = augenNum != null && Number.isInteger(augenNum) && augenNum >= 0 && augenNum <= 240;
-  const reAugen = augenValid ? (d.augenParty === 're' ? augenNum! : 240 - augenNum!) : null;
+  const exactAugen = augenValid ? (d.augenParty === 're' ? augenNum! : 240 - augenNum!) : null;
+  const byResult = d.augenInput === 'result';
+  const resOptions = byResult && !d.resTie && d.resWinner ? resultOptions(d.resWinner, d.resLevel, d.reAnn, d.kontraAnn, solo, rules) : [];
+  const resAugen = d.resTie
+    ? TIE_AUGEN
+    : resOptions.length === 1
+      ? resOptions[0].reAugen
+      : (resOptions.find((o) => o.reAugen === d.resBand)?.reAugen ?? null);
+  const reAugen = byResult ? resAugen : exactAugen;
+  const resWinnerName = d.resWinner === 'kontra' ? 'Kontra' : solo ? 'der Solist' : 'Re';
 
   const problem = (() => {
     if (d.playerIds.length !== 4) return 'Wähle genau 4 Spieler am Tisch';
     if (solo && d.reIds.length !== 1) return 'Tippe den Solisten an';
     if (!solo && d.reIds.length !== 2) return d.reIds.length === 1 ? 'Wähle den zweiten Re-Spieler' : 'Tippe die beiden Re-Spieler an';
-    if (d.mode === 'calc' && !augenValid) return d.augen.trim() === '' ? 'Trage die Augen ein' : 'Augen müssen zwischen 0 und 240 liegen';
+    if (d.mode === 'calc' && byResult) {
+      if (!d.resTie && !d.resWinner) return 'Wer hat gewonnen?';
+      if (!d.resTie && resOptions.length === 0) return 'Das Ergebnis passt nicht zu den Ansagen';
+      if (resAugen == null) return `Wie viele Augen hatte ${resWinnerName}?`;
+    }
+    if (d.mode === 'calc' && !byResult && !augenValid) return d.augen.trim() === '' ? 'Trage die Augen ein' : 'Augen müssen zwischen 0 und 240 liegen';
     if (d.mode === 'quick' && d.value == null) return 'Wähle den Spielwert';
     if (d.mode === 'quick' && d.value !== 0 && !d.winner) return solo ? 'Hat der Solist gewonnen?' : 'Wer hat gewonnen?';
     return null;
@@ -189,7 +219,14 @@ function EntryInner({
         mode: d.mode,
         calc:
           d.mode === 'calc'
-            ? { reAugen: reAugen!, reAnn: d.reAnn, kontraAnn: d.kontraAnn, reExtras: solo ? emptyExtras() : d.reExtras, kontraExtras: solo ? emptyExtras() : d.kontraExtras }
+            ? {
+                reAugen: reAugen!,
+                reAnn: d.reAnn,
+                kontraAnn: d.kontraAnn,
+                reExtras: solo ? emptyExtras() : d.reExtras,
+                kontraExtras: solo ? emptyExtras() : d.kontraExtras,
+                result: byResult ? { winner: d.resTie ? null : d.resWinner, level: d.resTie ? 0 : d.resLevel } : undefined,
+              }
             : undefined,
         quick: d.mode === 'quick' ? { winner: d.value === 0 ? null : d.winner, value: d.value ?? 0 } : undefined,
         bockTriggers: [],
@@ -206,7 +243,7 @@ function EntryInner({
       setShowErrors(true);
       return;
     }
-    savePrefs({ ...loadPrefs(), entryMode: d.mode, augenParty: d.augenParty });
+    savePrefs({ ...loadPrefs(), entryMode: d.mode, augenParty: d.augenParty, augenInput: d.augenInput });
     onSave({ ...game, bockTriggers: triggers }, !editing);
   };
 
@@ -394,68 +431,121 @@ function EntryInner({
         {d.mode === 'calc' ? (
           <>
             <Section
-              title="Augen"
+              title={byResult ? 'Ergebnis' : 'Augen'}
               aside={
                 <Segmented
-                  label="Augen gezählt für"
+                  label="Ergebnis oder genaue Augen"
                   size="sm"
-                  value={d.augenParty}
-                  onChange={setAugenParty}
+                  value={d.augenInput}
+                  onChange={(augenInput) => set({ augenInput })}
                   options={[
-                    { value: 're', label: reLabel },
-                    { value: 'kontra', label: 'Kontra' },
+                    { value: 'result', label: 'Ergebnis' },
+                    { value: 'exact', label: 'Augen genau' },
                   ]}
                 />
               }
             >
-              <div className="augen">
-                <button type="button" className="augen__step" onClick={() => stepAugen(-1)} aria-label="Eine Auge weniger">
-                  <Icon name="minus" strokeWidth={2.5} />
-                </button>
-                <label className="augen__field">
-                  <span className="sr-only">Augen {d.augenParty === 're' ? reLabel : 'Kontra'}</span>
-                  <input
-                    id="augen-input"
-                    className={`augen__input num${showErrors && !augenValid ? ' is-invalid' : ''}`}
-                    inputMode="numeric"
-                    pattern="[0-9]*"
-                    maxLength={3}
-                    placeholder="Augen"
-                    value={d.augen}
-                    onChange={(e) => set({ augen: e.target.value.replace(/\D/g, '').slice(0, 3) })}
-                    onFocus={(e) => e.target.select()}
+              {byResult ? (
+                <div className="result-pick">
+                  <Segmented
+                    label="Gewinner"
+                    value={d.resTie ? null : d.resWinner}
+                    onChange={(resWinner) => set({ resWinner, resTie: false, resBand: null })}
+                    options={[
+                      { value: 're' as Party, label: `${reLabel} gewinnt` },
+                      { value: 'kontra' as Party, label: 'Kontra gewinnt' },
+                    ]}
                   />
-                </label>
-                <button type="button" className="augen__step" onClick={() => stepAugen(1)} aria-label="Eine Auge mehr">
-                  <Icon name="plus" strokeWidth={2.5} />
-                </button>
-              </div>
-              <input
-                id="augen-slider"
-                type="range"
-                className="augen__slider"
-                min={0}
-                max={240}
-                step={1}
-                value={augenValid ? augenNum! : 120}
-                onChange={(e) => set({ augen: e.target.value })}
-                aria-label="Augen grob einstellen"
-                style={{ ['--fill' as string]: `${((augenValid ? augenNum! : 120) / 240) * 100}%` }}
-              />
-              <div className="augen__scale num" aria-hidden="true">
-                {[0, 30, 60, 90, 120, 150, 180, 210, 240].map((v) => (
-                  <button key={v} type="button" tabIndex={-1} onClick={() => set({ augen: String(v) })}>
-                    {v}
+                  <Segmented
+                    label="Wie hoch gewonnen"
+                    className="seg--levels"
+                    value={d.resTie ? null : d.resLevel}
+                    onChange={(resLevel) => set({ resLevel, resTie: false, resBand: null })}
+                    options={([0, 1, 2, 3, 4] as ResultLevel[]).map((lv) => ({ value: lv, label: LEVEL_LABEL[lv] }))}
+                  />
+                  <button type="button" className="chip result-pick__tie" aria-pressed={d.resTie} onClick={() => set({ resTie: !d.resTie, resBand: null })}>
+                    120 : 120
                   </button>
-                ))}
-              </div>
-              <p className="augen__split num">
-                <span className="party-re">
-                  {reLabel} {reAugen ?? '–'}
-                </span>
-                <span className="augen__sep">:</span>
-                <span className="party-kontra">Kontra {reAugen == null ? '–' : 240 - reAugen}</span>
-              </p>
+                  {resOptions.length > 1 && (
+                    <div className="field">
+                      <span className="field__label">Augen {d.resWinner === 'kontra' ? 'Kontra' : reLabel} (wegen der Absage wichtig)</span>
+                      <Segmented
+                        label={`Augen ${d.resWinner === 'kontra' ? 'Kontra' : reLabel}`}
+                        value={d.resBand}
+                        onChange={(resBand) => set({ resBand })}
+                        options={resOptions.map((o) => ({ value: o.reAugen, label: o.label }))}
+                      />
+                    </div>
+                  )}
+                  {!d.resTie && d.resWinner && resOptions.length === 0 && (
+                    <p className="section__hint is-error">Passt nicht zu den Ansagen. Prüfe die Ansagen oder gib die Augen genau ein.</p>
+                  )}
+                </div>
+              ) : (
+                <>
+                <div className="field field--row augen__party">
+                  <span className="field__label">Gezählt für</span>
+                  <Segmented
+                    label="Augen gezählt für"
+                    size="sm"
+                    value={d.augenParty}
+                    onChange={setAugenParty}
+                    options={[
+                      { value: 're', label: reLabel },
+                      { value: 'kontra', label: 'Kontra' },
+                    ]}
+                  />
+                </div>
+                <div className="augen">
+                  <button type="button" className="augen__step" onClick={() => stepAugen(-1)} aria-label="Eine Auge weniger">
+                    <Icon name="minus" strokeWidth={2.5} />
+                  </button>
+                  <label className="augen__field">
+                    <span className="sr-only">Augen {d.augenParty === 're' ? reLabel : 'Kontra'}</span>
+                    <input
+                      id="augen-input"
+                      className={`augen__input num${showErrors && !augenValid ? ' is-invalid' : ''}`}
+                      inputMode="numeric"
+                      pattern="[0-9]*"
+                      maxLength={3}
+                      placeholder="Augen"
+                      value={d.augen}
+                      onChange={(e) => set({ augen: e.target.value.replace(/\D/g, '').slice(0, 3) })}
+                      onFocus={(e) => e.target.select()}
+                    />
+                  </label>
+                  <button type="button" className="augen__step" onClick={() => stepAugen(1)} aria-label="Eine Auge mehr">
+                    <Icon name="plus" strokeWidth={2.5} />
+                  </button>
+                </div>
+                <input
+                  id="augen-slider"
+                  type="range"
+                  className="augen__slider"
+                  min={0}
+                  max={240}
+                  step={1}
+                  value={augenValid ? augenNum! : 120}
+                  onChange={(e) => set({ augen: e.target.value })}
+                  aria-label="Augen grob einstellen"
+                  style={{ ['--fill' as string]: `${((augenValid ? augenNum! : 120) / 240) * 100}%` }}
+                />
+                <div className="augen__scale num" aria-hidden="true">
+                  {[0, 30, 60, 90, 120, 150, 180, 210, 240].map((v) => (
+                    <button key={v} type="button" tabIndex={-1} onClick={() => set({ augen: String(v) })}>
+                      {v}
+                    </button>
+                  ))}
+                </div>
+                <p className="augen__split num">
+                  <span className="party-re">
+                    {reLabel} {reAugen ?? '–'}
+                  </span>
+                  <span className="augen__sep">:</span>
+                  <span className="party-kontra">Kontra {reAugen == null ? '–' : 240 - reAugen}</span>
+                </p>
+                </>
+              )}
             </Section>
 
             <Section title="Ansagen">

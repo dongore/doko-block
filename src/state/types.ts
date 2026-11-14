@@ -37,6 +37,8 @@ export interface CalcInput {
   kontraAnn: Ann;
   reExtras: Extras;
   kontraExtras: Extras;
+  /** Set when entered as a result (winner + how high) instead of exact Augen; reAugen is then a representative value. */
+  result?: { winner: Party | null; level: number };
 }
 
 export interface QuickInput {

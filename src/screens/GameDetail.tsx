@@ -4,6 +4,7 @@ import { Sheet } from '../components/ui';
 import { signed } from '../logic/format';
 import { gameTitle } from '../logic/labels';
 import { ABSAGE_LABEL, partyName, TRIGGER_LABEL } from '../logic/scoring';
+import { resultText } from '../logic/resultEntry';
 import type { GameView } from '../logic/session';
 import type { Ann, Session } from '../state/types';
 
@@ -97,12 +98,19 @@ export function GameDetailSheet({
           )}
           {game.calc && (
             <>
-              <div>
-                <dt>Augen</dt>
-                <dd className="num">
-                  {reLabel} {game.calc.reAugen} : {240 - game.calc.reAugen} Kontra
-                </dd>
-              </div>
+              {game.calc.result ? (
+                <div>
+                  <dt>Ergebnis</dt>
+                  <dd>{resultText(game.calc.result, reLabel)}</dd>
+                </div>
+              ) : (
+                <div>
+                  <dt>Augen</dt>
+                  <dd className="num">
+                    {reLabel} {game.calc.reAugen} : {240 - game.calc.reAugen} Kontra
+                  </dd>
+                </div>
+              )}
               <div>
                 <dt>Ansagen</dt>
                 <dd>

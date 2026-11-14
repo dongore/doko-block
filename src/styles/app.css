@@ -1983,6 +1983,22 @@ ol {
   color: var(--ink-3);
 }
 
+.result-pick {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.result-pick__tie {
+  align-self: flex-start;
+}
+.seg--levels .seg__opt {
+  flex: 1 1 auto;
+  padding: 0 6px;
+  overflow: visible;
+}
+.augen__party {
+  justify-content: flex-end;
+}
 .ann {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
