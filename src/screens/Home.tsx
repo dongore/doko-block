@@ -94,9 +94,11 @@ export function Home() {
           <h2 className="eyebrow">Daten</h2>
           <p className="muted">Alles wird nur auf diesem Gerät gespeichert. Sichere deine Spielabende ab und zu als Datei.</p>
           <div className="btn-row btn-row--start">
-            <button type="button" className="btn btn--ghost btn--sm" onClick={exportAll} disabled={data.sessions.length === 0}>
-              <Icon name="download" size={18} /> Sichern
-            </button>
+            {!__SINGLE__ && (
+              <button type="button" className="btn btn--ghost btn--sm" onClick={exportAll} disabled={data.sessions.length === 0}>
+                <Icon name="download" size={18} /> Sichern
+              </button>
+            )}
             <button type="button" className="btn btn--ghost btn--sm" onClick={() => fileInput.current?.click()}>
               <Icon name="upload" size={18} /> Wiederherstellen
             </button>
