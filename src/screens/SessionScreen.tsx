@@ -1,6 +1,6 @@
 import { Fragment, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import { navigate } from '../App';
-import { DealerIcon, Icon } from '../components/Icon';
+import { DealerIcon, Icon, LeadIcon } from '../components/Icon';
 import { ConfirmSheet, Segmented, Sheet, Switch, useToast } from '../components/ui';
 import { shareText } from '../components/share';
 import { useWakeLock } from '../components/useWakeLock';
@@ -349,14 +349,14 @@ function BlockHead({ session, view }: { session: Session; view: SessionView }) {
               <span className="bh-flags">
                 {isDealer && (
                   <span className="dealer-mark" title="gibt">
-                    <DealerIcon size={16} />
+                    <DealerIcon size={18} />
                     <span className="sr-only">gibt</span>
                   </span>
                 )}
                 {out && !isDealer && <span className="flag">aus</span>}
                 {isLeader && (
                   <span className="lead-mark" title="kommt raus">
-                    <Icon name="play" size={9} strokeWidth={3} />
+                    <LeadIcon size={17} />
                     <span className="sr-only">kommt raus</span>
                   </span>
                 )}

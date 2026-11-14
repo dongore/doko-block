@@ -73,12 +73,24 @@ export function Logo({ size = 32 }: { size?: number }) {
   );
 }
 
-/** Two fanned cards: marks who deals next. */
-export function DealerIcon({ size = 16 }: { size?: number }) {
+/** Two fanned card outlines: marks who deals next. */
+export function DealerIcon({ size = 18 }: { size?: number }) {
   return (
     <svg className="icon" width={size} height={Math.round(size * 0.85)} viewBox="0 0 20 17" aria-hidden="true">
-      <rect x="3" y="2.5" width="8.5" height="12" rx="1.6" transform="rotate(-14 7.2 8.5)" fill="currentColor" opacity="0.45" />
-      <rect x="8.5" y="2" width="8.5" height="12" rx="1.6" transform="rotate(10 12.7 8)" fill="currentColor" />
+      <g fill="none" stroke="currentColor" strokeWidth="1.6">
+        <rect x="3.2" y="2.6" width="8" height="11.6" rx="1.6" transform="rotate(-14 7.2 8.4)" opacity="0.6" />
+        <rect x="8.6" y="2.2" width="8" height="11.6" rx="1.6" transform="rotate(10 12.6 8)" />
+      </g>
+    </svg>
+  );
+}
+
+/** A single card with a "1": marks who leads the first trick ("kommt raus"). */
+export function LeadIcon({ size = 18 }: { size?: number }) {
+  return (
+    <svg className="icon lead-icon" width={Math.round(size * 0.75)} height={size} viewBox="0 0 12 16" aria-hidden="true">
+      <rect x="0.5" y="0.5" width="11" height="15" rx="2" fill="currentColor" />
+      <path d="M6.9 3.6V12.4M6.9 3.6L4.4 5.6" fill="none" style={{ stroke: 'var(--lead-ink, #0e5a40)' }} strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }

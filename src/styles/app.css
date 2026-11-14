@@ -1433,27 +1433,22 @@ ol {
   background: var(--chrome-chip);
   color: var(--on-chrome);
 }
-.dealer-mark {
-  display: inline-grid;
-  place-items: center;
-  width: 22px;
-  height: 18px;
-  border-radius: 6px;
-  background: var(--chrome-chip);
-  color: var(--on-chrome);
-}
+.dealer-mark,
 .lead-mark {
   display: inline-grid;
   place-items: center;
-  width: 22px;
-  height: 18px;
-  border-radius: 6px;
-  background: var(--on-chrome);
-  color: var(--chrome);
+  height: 20px;
+  color: var(--on-chrome);
 }
-.lead-mark .icon {
-  fill: currentColor;
-  margin-left: 1px;
+.dealer-mark {
+  color: var(--on-chrome-2);
+}
+/* the "1" is cut out of the white card in the felt colour; tilted like a card being played */
+.lead-mark {
+  --lead-ink: var(--chrome);
+}
+.lead-icon {
+  transform: rotate(-10deg);
 }
 .block-head .pflicht-mark {
   border-color: var(--on-chrome-2);
