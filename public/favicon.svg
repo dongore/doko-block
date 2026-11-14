@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="116" fill="#0e5a40"/>
+  <g transform="rotate(-13 256 300)">
+    <rect x="132" y="104" width="214" height="296" rx="26" fill="#bfdccb"/>
+    <path d="M190 160c-14 0-24 10-24 22 0 18 24 30 24 44 0-14 24-26 24-44 0-12-10-22-24-22z" fill="#c1272d" transform="translate(-2 -6) scale(1)"/>
+  </g>
+  <g transform="rotate(9 256 300)">
+    <rect x="168" y="112" width="214" height="296" rx="26" fill="#fbfcfb"/>
+    <g fill="#14201b">
+      <circle cx="275" cy="226" r="37"/>
+      <circle cx="236" cy="282" r="37"/>
+      <circle cx="314" cy="282" r="37"/>
+      <circle cx="275" cy="268" r="24"/>
+      <path d="M275 262 C279 312 290 340 302 352 L248 352 C260 340 271 312 275 262 Z"/>
+    </g>
+    <text x="196" y="168" font-family="Arial, Helvetica, sans-serif" font-weight="700" font-size="44" fill="#14201b">D</text>
+  </g>
+</svg>
