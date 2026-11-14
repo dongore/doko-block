@@ -476,13 +476,18 @@ function GameRow({
       type="button"
       className={`grid-row brow${gv.multiplier > 1 ? ' is-bock' : ''}${gv.multiplier > 2 ? ' is-bock2' : ''}${fresh ? ' is-fresh' : ''}`}
       onClick={onOpen}
-      aria-label={`Spiel ${gv.number} ansehen`}
+      aria-label={`Spiel ${gv.number} ansehen${game.protest ? ', unter Protest' : ''}`}
     >
       <span className="bc-no">
         <span className="num">{gv.number}</span>
         <span className="bc-marks">
           {solo && <span className={`mark-solo${s?.red ? ' is-red' : ''}`}>{s?.glyph ?? 'S'}</span>}
           {game.bockTriggers.length > 0 && <span className="mark-bock">B{game.bockTriggers.length > 1 ? game.bockTriggers.length : ''}</span>}
+          {game.protest && (
+            <span className="mark-protest" title={game.protestNote ? `Unter Protest: ${game.protestNote}` : 'Unter Protest'}>
+              !
+            </span>
+          )}
         </span>
       </span>
       {cols.map((id) => {

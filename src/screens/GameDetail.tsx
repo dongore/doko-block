@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { Breakdown } from '../components/Breakdown';
 import { Icon } from '../components/Icon';
-import { Sheet } from '../components/ui';
+import { Sheet, Switch } from '../components/ui';
+import { actions } from '../state/store';
 import { signed } from '../logic/format';
 import { gameTitle } from '../logic/labels';
 import { ABSAGE_LABEL, partyName, TRIGGER_LABEL } from '../logic/scoring';
@@ -133,6 +134,15 @@ export function GameDetailSheet({
             </div>
           )}
         </dl>
+
+        <div className={`detail__protest${game.protest ? ' is-on' : ''}`}>
+          <Switch
+            label="Unter Protest"
+            hint={game.protest ? (game.protestNote ?? 'Ohne Begründung. Über „Bearbeiten“ kannst du einen Grund eintragen.') : 'Markiert das Spiel im Block als strittig, die Punkte zählen trotzdem.'}
+            checked={!!game.protest}
+            onChange={(on) => actions.updateGame(session.id, { ...game, protest: on || undefined, protestNote: on ? game.protestNote : undefined })}
+          />
+        </div>
 
         {result.note && <p className="result__note">{result.note}</p>}
 

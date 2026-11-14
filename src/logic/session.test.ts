@@ -207,6 +207,12 @@ describe('session replay', () => {
     expect(v.next.dealerId).toBe('c');
   });
 
+  it('still counts a game played unter Protest', () => {
+    const s = mkSession(['a', 'b', 'c', 'd']);
+    s.games.push(quick('a', ['a', 'b', 'c', 'd'], ['a', 'b'], 3, { protest: true, protestNote: 'Kontra zu spät' }));
+    expect(computeSession(s).totals).toEqual({ a: 3, b: 3, c: -3, d: -3 });
+  });
+
   it('keeps calc games zero-sum', () => {
     const s = mkSession(['a', 'b', 'c', 'd']);
     s.games.push({

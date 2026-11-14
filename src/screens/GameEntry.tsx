@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Breakdown } from '../components/Breakdown';
 import { Icon } from '../components/Icon';
-import { Section, Segmented, Sheet, Stepper } from '../components/ui';
+import { Section, Segmented, Sheet, Stepper, Switch } from '../components/ui';
 import { signed, uid } from '../logic/format';
 import { KIND_LABEL, SOLO_TYPES } from '../logic/labels';
 import { AUTO_TRIGGERS, baseDeltas, detectBockTriggers, emptyExtras, partyName, scoreGame, TRIGGER_LABEL } from '../logic/scoring';
@@ -32,6 +32,8 @@ interface Draft {
   value: number | null;
   overrides: Partial<Record<BockTrigger, boolean>>;
   manual: number;
+  protest: boolean;
+  protestNote: string;
 }
 
 function initialDraft(session: Session, view: SessionView, editing?: Game): Draft {
@@ -67,6 +69,8 @@ function initialDraft(session: Session, view: SessionView, editing?: Game): Draf
       value: editing.quick?.value ?? null,
       overrides,
       manual: editing.bockTriggers.filter((t) => t === 'manual').length,
+      protest: !!editing.protest,
+      protestNote: editing.protestNote ?? '',
     };
   }
   return {
@@ -91,6 +95,8 @@ function initialDraft(session: Session, view: SessionView, editing?: Game): Draf
     value: null,
     overrides: {},
     manual: 0,
+    protest: false,
+    protestNote: '',
   };
 }
 
@@ -236,6 +242,8 @@ function EntryInner({
             : undefined,
         quick: d.mode === 'quick' ? { winner: d.value === 0 ? null : d.winner, value: d.value ?? 0 } : undefined,
         bockTriggers: [],
+        protest: d.protest || undefined,
+        protestNote: d.protest && d.protestNote.trim() ? d.protestNote.trim() : undefined,
       };
   const result = game ? scoreGame(game, rules) : null;
   const detected = game && result ? detectBockTriggers(game, result, rules) : [];
@@ -728,6 +736,25 @@ function EntryInner({
             )}
           </Section>
         )}
+
+        <Section title="Protest" className="protest-section">
+          <Switch
+            label="Unter Protest gespielt"
+            hint="Das Spiel zählt, ist im Block aber als strittig markiert."
+            checked={d.protest}
+            onChange={(protest) => set({ protest })}
+          />
+          {d.protest && (
+            <input
+              id="protest-note"
+              className="input"
+              value={d.protestNote}
+              onChange={(e) => set({ protestNote: e.target.value })}
+              placeholder="Grund (optional), z. B. Kontra zu spät angesagt"
+              maxLength={120}
+            />
+          )}
+        </Section>
       </div>
     </Sheet>
   );

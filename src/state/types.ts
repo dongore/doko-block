@@ -69,6 +69,9 @@ export interface Game {
   quick?: QuickInput;
   /** Bock rounds triggered by this game (each entry = one Bockrunde). */
   bockTriggers: BockTrigger[];
+  /** Played "unter Protest": still counts, but marked as disputed in the block. */
+  protest?: boolean;
+  protestNote?: string;
 }
 
 export interface Rules {
