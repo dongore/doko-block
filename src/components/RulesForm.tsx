@@ -62,7 +62,7 @@ export function RulesForm({ rules, onChange, playerCount }: { rules: Rules; onCh
       <Section title={rules.pflichtsolo.enabled ? 'Lustsolo' : 'Solo'} className="rules__group">
         <Switch
           label={rules.pflichtsolo.enabled ? 'Geber gibt nach Lustsolo erneut' : 'Geber gibt nach Solo erneut'}
-          hint="Der Solist kommt raus. Saß er ohnehin links vom Geber, wechselt der Geber normal."
+          hint="Der Solist kommt raus. Gilt für das erste Solo jedes Spielers pro Runde, außer er saß ohnehin links vom Geber."
           checked={rules.lustsolo.dealerStays}
           onChange={(v) => set({ lustsolo: { dealerStays: v } })}
         />

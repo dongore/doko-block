@@ -100,6 +100,30 @@ describe('session replay', () => {
       still.games.push(lust('a', t, 'c', { soloType: 'stille-hochzeit' }));
       expect(computeSession(still).next.dealerId).toBe('b');
     });
+    it('repeats only for the first solo of each player per round', () => {
+      const s = mkSession(t);
+      s.games.push(lust('a', t, 'c')); // Carla's first solo: a deals again
+      s.games.push(lust('a', t, 'd')); // David's first solo: a deals again
+      s.games.push(lust('a', t, 'c')); // Carla's second solo this round: dealer moves on
+      const v = computeSession(s);
+      expect(v.games.map((g) => g.dealerStays)).toEqual([true, true, false]);
+      expect(v.next.dealerId).toBe('b');
+    });
+    it('counts a solo by the player who leads anyway as the first one', () => {
+      const s = mkSession(t);
+      s.games.push(lust('a', t, 'b')); // Ben leads anyway: dealer moves on to b
+      s.games.push(lust('b', t, 'b', {})); // Ben again, now not leading: still his second solo this round
+      expect(computeSession(s).games.map((g) => g.dealerStays)).toEqual([false, false]);
+    });
+    it('allows a repeat again in the next round', () => {
+      const s = mkSession(t);
+      s.games.push(lust('a', t, 'c'));
+      for (const d of t) s.games.push(quick(d, t, ['a', 'b'], 1));
+      s.games.push(lust('a', t, 'c'));
+      const v = computeSession(s);
+      expect(v.games.map((g) => g.dealerStays)).toEqual([true, false, false, false, false, true]);
+      expect(v.games[5].round).toBe(2);
+    });
     it('always repeats after a Pflichtsolo, even by the left neighbour (DDV 4.2.5)', () => {
       const s = mkSession(t);
       s.games.push(quick('a', t, ['b'], 1, { kind: 'solo', pflicht: true }));

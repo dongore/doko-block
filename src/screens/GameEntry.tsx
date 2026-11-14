@@ -4,7 +4,7 @@ import { Section, Segmented, Sheet, Stepper } from '../components/ui';
 import { signed, uid } from '../logic/format';
 import { KIND_LABEL, SOLO_TYPES } from '../logic/labels';
 import { AUTO_TRIGGERS, baseDeltas, detectBockTriggers, emptyExtras, partyName, scoreGame, TRIGGER_LABEL } from '../logic/scoring';
-import { dealerStayReason, leaderOf, type SessionView } from '../logic/session';
+import { dealOutcome, isAnnouncedSolo, type SessionView } from '../logic/session';
 import { loadPrefs, savePrefs } from '../state/store';
 import type { Ann, BockTrigger, Extras, Game, GameKind, Party, PlayerId, Session, SoloType } from '../state/types';
 
@@ -143,13 +143,22 @@ function EntryInner({
   const pflicht = rules.pflichtsolo.enabled && solo ? (d.pflicht ?? !pflichtAlready) : false;
   const dealHint = (() => {
     if (!soloist) return null;
+    const round = editView ? editView.round : view.next.round;
+    const before = editView ? editView.index : view.games.length;
+    const earlier = view.games.some((g) => g.index < before && g.round === round && isAnnouncedSolo(g.game) && g.game.reIds[0] === soloist);
     const g = { kind: d.kind, pflicht, soloType: d.soloType ?? undefined, reIds: d.reIds, dealerId, playerIds: d.playerIds };
-    const reason = dealerStayReason(g, rules, session);
-    if (reason === 'pflicht') return `Pflichtsolo: ${name(soloist)} kommt raus, ${name(dealerId)} gibt danach noch einmal.`;
-    if (reason === 'lust') return `${name(soloist)} kommt raus, ${name(dealerId)} gibt danach noch einmal.`;
-    if (rules.lustsolo.dealerStays && !pflicht && d.soloType !== 'stille-hochzeit' && leaderOf(g, session) === soloist)
-      return `${name(soloist)} kommt ohnehin raus, der Geber wechselt normal.`;
-    return null;
+    switch (dealOutcome(g, rules, session, earlier)) {
+      case 'pflicht':
+        return `Pflichtsolo: ${name(soloist)} kommt raus, ${name(dealerId)} gibt danach noch einmal.`;
+      case 'lust':
+        return `${name(soloist)} kommt raus, ${name(dealerId)} gibt danach noch einmal.`;
+      case 'leads':
+        return `${name(soloist)} kommt ohnehin raus, der Geber wechselt normal.`;
+      case 'repeat':
+        return `${name(soloist)} hat in dieser Runde schon ein Solo gespielt, der Geber wechselt normal.`;
+      default:
+        return null;
+    }
   })();
 
   const augenNum = d.augen.trim() === '' ? null : Number(d.augen);
