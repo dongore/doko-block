@@ -73,8 +73,9 @@ describe('session replay', () => {
     expect(v.next.number).toBe(3);
   });
 
-  it('has Pflichtsolo tracking off by default', () => {
+  it('has Pflichtsolo tracking and Abrechnung off by default', () => {
     expect(DEFAULT_RULES.pflichtsolo.enabled).toBe(false);
+    expect(DEFAULT_RULES.money.enabled).toBe(false);
   });
 
   it('keeps the dealer after a Pflichtsolo and tracks it', () => {
@@ -215,6 +216,14 @@ describe('saved data', () => {
     // Once migrated, a later choice to switch it back on is kept.
     expect(sanitize({ sessions: [], lastRules: on, defaultsRev: 1 }).lastRules?.pflichtsolo.enabled).toBe(true);
   });
+  it('switches Abrechnung off once in the carried-over rules, keeping running evenings as they are', () => {
+    const on = { ...DEFAULT_RULES, money: { ...DEFAULT_RULES.money, enabled: true } };
+    const running = { ...mkSession(['a', 'b', 'c', 'd']), rules: on };
+    const data = sanitize({ sessions: [running], lastRules: on, defaultsRev: 1 });
+    expect(data.lastRules?.money.enabled).toBe(false);
+    expect(data.sessions[0].rules.money.enabled).toBe(true);
+    expect(sanitize({ sessions: [], lastRules: on, defaultsRev: 2 }).lastRules?.money.enabled).toBe(true);
+  });
   it('maps the old combined "Ansage verloren" switch to Kontra only', () => {
     const legacy = { bock: { enabled: true, mode: 'sequential', triggers: { tie120: true, lostAnnounced: true } } } as never;
     const r = normalizeRules(legacy);
@@ -234,7 +243,7 @@ describe('saved data', () => {
 
 describe('ranking & money', () => {
   it('leaves the payout out of the shared result when Abrechnung is off', () => {
-    const s = mkSession(['a', 'b', 'c', 'd']);
+    const s = mkSession(['a', 'b', 'c', 'd'], { money: { ...DEFAULT_RULES.money, enabled: true } });
     s.games.push(quick('a', ['a', 'b', 'c', 'd'], ['a', 'b'], 2));
     expect(resultText(s, computeSession(s))).toContain('Abrechnung (5 ct pro Punkt)');
     const off = { ...s, rules: { ...s.rules, money: { ...s.rules.money, enabled: false } } };

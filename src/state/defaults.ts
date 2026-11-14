@@ -4,7 +4,7 @@ import type { AppData, Rules } from './types';
 type LegacyTriggers = Partial<Rules['bock']['triggers']> & { lostAnnounced?: boolean };
 
 /** Bump when a default changes that should also reset the rules carried over to the next evening. */
-export const DEFAULTS_REV = 1;
+export const DEFAULTS_REV = 2;
 
 export const DEFAULT_RULES: Rules = {
   extras: { fuchs: true, doppelkopf: true, karlchen: true, dulle: true, gegenDieAlten: true },
@@ -18,7 +18,7 @@ export const DEFAULT_RULES: Rules = {
   reKontra: 'plus2',
   sitOut: 'opposite',
   rounds: null,
-  money: { enabled: true, centsPerPoint: 5, mode: 'pairwise' },
+  money: { enabled: false, centsPerPoint: 5, mode: 'pairwise' },
 };
 
 export const emptyData = (): AppData => ({

@@ -46,8 +46,10 @@ export function sanitize(input: unknown): AppData {
     seating: s.seating ?? s.players.map((p) => p.id),
   }));
   let lastRules = d.lastRules ? normalizeRules(d.lastRules) : undefined;
-  // Rev 1: Pflichtsolo became off by default; switch it off for the next new evening once.
-  if ((d.defaultsRev ?? 0) < 1 && lastRules) lastRules = { ...lastRules, pflichtsolo: { ...lastRules.pflichtsolo, enabled: false } };
+  // One-time updates when a default changed: switch the feature off for the next new evening.
+  const rev = d.defaultsRev ?? 0;
+  if (rev < 1 && lastRules) lastRules = { ...lastRules, pflichtsolo: { ...lastRules.pflichtsolo, enabled: false } }; // Pflichtsolo off
+  if (rev < 2 && lastRules) lastRules = { ...lastRules, money: { ...lastRules.money, enabled: false } }; // Abrechnung off
   return {
     version: 1,
     sessions,
