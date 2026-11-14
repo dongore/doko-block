@@ -145,4 +145,6 @@ export interface AppData {
   knownPlayers: string[];
   lastRules?: Rules;
   keepAwake: boolean;
+  /** Which one-time updates to default rules have been applied (see sanitize). */
+  defaultsRev?: number;
 }

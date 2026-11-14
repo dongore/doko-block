@@ -3,6 +3,9 @@ import type { AppData, Rules } from './types';
 /** Saved data from before the Re/Kontra split had a single "lostAnnounced" switch. */
 type LegacyTriggers = Partial<Rules['bock']['triggers']> & { lostAnnounced?: boolean };
 
+/** Bump when a default changes that should also reset the rules carried over to the next evening. */
+export const DEFAULTS_REV = 1;
+
 export const DEFAULT_RULES: Rules = {
   extras: { fuchs: true, doppelkopf: true, karlchen: true, dulle: true, gegenDieAlten: true },
   bock: {
@@ -10,7 +13,7 @@ export const DEFAULT_RULES: Rules = {
     mode: 'sequential',
     triggers: { tie120: true, lostKontra: true, lostRe: false, lostSolo: false, zeroGame: true },
   },
-  pflichtsolo: { enabled: true, dealerStays: true },
+  pflichtsolo: { enabled: false, dealerStays: true },
   lustsolo: { dealerStays: true },
   reKontra: 'plus2',
   sitOut: 'opposite',
@@ -23,6 +26,7 @@ export const emptyData = (): AppData => ({
   sessions: [],
   knownPlayers: [],
   keepAwake: true,
+  defaultsRev: DEFAULTS_REV,
 });
 
 /** Fill in fields that older saved data may lack. */

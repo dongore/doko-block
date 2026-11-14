@@ -16,7 +16,7 @@ interface Script {
   koEx?: Partial<Extras>;
 }
 
-// A plausible evening: mostly normal games, two Pflichtsoli, two 120:120 games that start Bockrunden.
+// A plausible evening: mostly normal games, two solos, two 120:120 games that start Bockrunden.
 const SCRIPT: Script[] = [
   { augen: 128, pair: [0, 2] },
   { augen: 152, re: 1, pair: [1, 3], reEx: { fuchs: 1 } },
@@ -64,7 +64,7 @@ export function makeExampleSession(): Session {
       playerIds: table,
       kind: s.solo ? 'solo' : (s.kind ?? 'normal'),
       soloType: s.solo?.type,
-      pflicht: s.solo ? true : undefined,
+      pflicht: s.solo ? false : undefined,
       reIds,
       mode: 'calc',
       calc: {

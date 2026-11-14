@@ -1,5 +1,5 @@
 import { useSyncExternalStore } from 'react';
-import { emptyData, normalizeRules } from './defaults';
+import { DEFAULTS_REV, emptyData, normalizeRules } from './defaults';
 import { determineWinner, emptyExtras } from '../logic/scoring';
 import type { AppData, BockTrigger, Game, Rules, Session } from './types';
 
@@ -45,12 +45,16 @@ export function sanitize(input: unknown): AppData {
     manualBocks: s.manualBocks ?? [],
     seating: s.seating ?? s.players.map((p) => p.id),
   }));
+  let lastRules = d.lastRules ? normalizeRules(d.lastRules) : undefined;
+  // Rev 1: Pflichtsolo became off by default; switch it off for the next new evening once.
+  if ((d.defaultsRev ?? 0) < 1 && lastRules) lastRules = { ...lastRules, pflichtsolo: { ...lastRules.pflichtsolo, enabled: false } };
   return {
     version: 1,
     sessions,
     knownPlayers: Array.isArray(d.knownPlayers) ? d.knownPlayers.filter((x) => typeof x === 'string') : [],
-    lastRules: d.lastRules ? normalizeRules(d.lastRules) : undefined,
+    lastRules,
     keepAwake: d.keepAwake ?? true,
+    defaultsRev: DEFAULTS_REV,
   };
 }
 

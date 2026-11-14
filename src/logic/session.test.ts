@@ -59,8 +59,12 @@ describe('session replay', () => {
     expect(v.next.number).toBe(3);
   });
 
+  it('has Pflichtsolo tracking off by default', () => {
+    expect(DEFAULT_RULES.pflichtsolo.enabled).toBe(false);
+  });
+
   it('keeps the dealer after a Pflichtsolo and tracks it', () => {
-    const s = mkSession(['a', 'b', 'c', 'd']);
+    const s = mkSession(['a', 'b', 'c', 'd'], { pflichtsolo: { enabled: true, dealerStays: true } });
     s.games.push(quick('a', ['a', 'b', 'c', 'd'], ['c'], 1, { kind: 'solo', pflicht: true }));
     const v = computeSession(s);
     expect(v.next.dealerId).toBe('a');
@@ -125,7 +129,7 @@ describe('session replay', () => {
       expect(v.games[5].round).toBe(2);
     });
     it('always repeats after a Pflichtsolo, even by the left neighbour (DDV 4.2.5)', () => {
-      const s = mkSession(t);
+      const s = mkSession(t, { pflichtsolo: { enabled: true, dealerStays: true } });
       s.games.push(quick('a', t, ['b'], 1, { kind: 'solo', pflicht: true }));
       expect(computeSession(s).next.dealerId).toBe('a');
     });
@@ -191,6 +195,12 @@ describe('session replay', () => {
 });
 
 describe('saved data', () => {
+  it('switches Pflichtsolo off once in the rules carried over to the next evening', () => {
+    const on = { ...DEFAULT_RULES, pflichtsolo: { enabled: true, dealerStays: true } };
+    expect(sanitize({ sessions: [], lastRules: on }).lastRules?.pflichtsolo.enabled).toBe(false);
+    // Once migrated, a later choice to switch it back on is kept.
+    expect(sanitize({ sessions: [], lastRules: on, defaultsRev: 1 }).lastRules?.pflichtsolo.enabled).toBe(true);
+  });
   it('maps the old combined "Ansage verloren" switch to Kontra only', () => {
     const legacy = { bock: { enabled: true, mode: 'sequential', triggers: { tie120: true, lostAnnounced: true } } } as never;
     const r = normalizeRules(legacy);
