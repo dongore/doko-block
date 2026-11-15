@@ -407,7 +407,7 @@ function BlockBody({
   );
 
   return (
-    <main className="block" style={{ '--n': cols.length } as CSSProperties}>
+    <main className={`block block--${cellMode}`} style={{ '--n': cols.length } as CSSProperties}>
       {view.games.length === 0 ? (
         <div className="block-empty">
           <p className="block-empty__title">Bereit für das erste Spiel</p>

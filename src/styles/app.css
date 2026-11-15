@@ -1577,7 +1577,8 @@ ol {
   color: var(--ink);
   font-weight: 700;
 }
-/* winners get a small green dot; the negative margin keeps the number centred */
+/* in the running-totals view winners get a small green dot (the negative margin keeps the number centred);
+   with game points the "+" already says who won */
 .bc.is-win .num::after {
   content: '';
   display: inline-block;
@@ -1588,6 +1589,9 @@ ol {
   border-radius: 50%;
   background: var(--pos);
   vertical-align: 0.42em;
+}
+.block--punkte .bc.is-win .num::after {
+  content: none;
 }
 .bc.is-minus .num {
   color: var(--neg);

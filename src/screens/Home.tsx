@@ -186,7 +186,7 @@ function BlockIllustration() {
           ))}
           <span className="bh-val" />
         </div>
-        <div className="illu__paper">
+        <div className="illu__paper block--punkte">
           {rows.map((r, k) => (
             <div key={k} className={`grid-row brow${r.bock ? ' is-bock' : ''}`}>
               <span className="bc-no">
