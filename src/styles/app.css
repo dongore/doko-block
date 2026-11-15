@@ -316,7 +316,8 @@ ol {
   margin: 0 auto;
   padding-left: var(--gutter);
   padding-right: var(--gutter-r);
-  padding-block: 20px 120px;
+  /* screens with a fixed bottom bar add room for it themselves (.setup__main, .block) */
+  padding-block: 20px calc(32px + var(--sab));
   display: flex;
   flex-direction: column;
   gap: 20px;
